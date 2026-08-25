@@ -1,0 +1,24 @@
+# environments & secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+
+# node
+node_modules/
+*.tsbuildinfo
+
+# local indexes & traces (never committed)
+*.acri-index
+ledger/*.jsonl
+assay/results/
+
+# junk
+.DS_Store
+Thumbs.db

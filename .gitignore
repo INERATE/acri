@@ -22,3 +22,7 @@ assay/results/
 # junk
 .DS_Store
 Thumbs.db
+
+# private working notes — never published
+CLAUDE.md
+.private/

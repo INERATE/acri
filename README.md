@@ -60,7 +60,9 @@ This repository currently holds the architecture and the contribution rules. The
 is public from day one so it can be argued with before it is built.
 
 Read [`docs/architecture.md`](docs/architecture.md) for the full design, the prior art it
-builds on, and the claims it explicitly refuses to make.
+builds on, and the claims it explicitly refuses to make. Read
+[`docs/decisions.md`](docs/decisions.md) for every capability that was proposed and cut,
+with the evidence that decided it.
 
 ### Roadmap
 

@@ -103,6 +103,37 @@ fluent, confident, wrong, with **no exception, no retry, and nothing in the logs
 Therefore nothing in acri may block a tool call the model wanted to make. `gate` may
 influence what is offered; it may never veto what is chosen.
 
+### 4.4 Route before generating, never mid-stream
+
+acri picks a model the same way it picks tools: **once, before work starts.**
+
+Routing cheap turns to a cheap model is a real technique.
+[Is Escalation Worth It?](https://arxiv.org/abs/2605.06350) finds that a lightweight
+*pre-generation* router beats optimal cascade policies on 4 of 5 datasets — because a
+cascade has already paid the cheap model before it decides to escalate.
+
+What acri will not do is interrupt a model mid-answer and hand the partial response to a
+stronger one. Three things break it:
+
+- **You cannot measure it.** Billing on stream abort is undocumented at one major provider
+  and charged regardless at the others, and usage totals arrive only in the final chunk.
+- **It is not portable.** "Continue from this partial response" changed shape between two
+  adjacent model versions *within a single vendor*, and has no equivalent elsewhere.
+- **It costs quality.** [Performance Drift from Model Switching](https://arxiv.org/abs/2603.03111)
+  measures a single clean handoff moving multi-turn instruction-following by double digits
+  in *both* directions. Mid-sentence, through a paraphrase, is strictly worse.
+
+And it violates §4.1: caches are keyed per provider *and* per model, so any switch starts
+from a cold prefix.
+
+The surviving rule:
+
+- Route **once per task**, before generation.
+- Route only **stateless, prefix-free** calls to the cheap tier — classification,
+  extraction, summarizing a tool result. There the cheap model competes honestly.
+- On failure, **re-run the original unmodified prompt** on the strong model so its cache
+  still hits. Never continue from the failed attempt.
+
 ## 5. What this design is not
 
 - **Not a microkernel, kernel, runtime, or OS.** Those words denote privilege boundaries,
@@ -119,6 +150,18 @@ influence what is offered; it may never veto what is chosen.
 - **Not a bundled model.** Shipping a large ONNX file inside a package breaks size limits,
   air-gapped installs, and per-platform wheels. If embeddings are wanted, the user supplies
   the encoder — anyone with hundreds of tools already runs one.
+- **Not an agent orchestrator.** No graph, no agent loop, no parallel task planner. That is
+  LangGraph's job and it has a full-time team. acri is called *by* an orchestrator.
+- **Not a protocol.** A wire format with exactly one implementation is a data structure.
+  MCP earned the word because independent parties implement it. Revisit if a second
+  implementation of acri's semantics ever appears.
+- **Not a semantic cache.** Serving a stored answer for a *similar* question is not a
+  performance feature with a quality knob; it is a correctness bug with a firing rate. A
+  question and its negation sit close together in embedding space. Exact-match on a hash of
+  the full canonical request is the only caching acri will do.
+
+The full list of what was proposed and cut, with the evidence for each, is in
+[decisions.md](decisions.md).
 
 ## 6. Prior art
 
@@ -136,6 +179,38 @@ acri is a placement argument, not a novelty claim. The technique is published.
 
 What acri contributes is the **form factor**: in-process, zero-daemon, framework-agnostic,
 and available on providers that ship nothing equivalent.
+
+## 6.5 Where the niche stands
+
+Two forces are closing on this space, and both argue for shipping something small soon.
+
+**MCP is moving tool filtering server-side.**
+[SEP-1300, "Tool Filtering with Groups and Tags"](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1300),
+closed as completed on 2025-12-01; SEP-1821 (Dynamic Tool Discovery) and SEP-1881
+(Scope-Filtered Tool Discovery) followed. Those are **static, server-declared** filters —
+groups, tags, scopes, fixed before the query exists. acri does **query-aware retrieval**:
+rank everything registered against *this* request. The two compose rather than compete,
+but the gap is narrowing.
+
+**Others have reached for this shape.** `openclaw-toolsearch` published to PyPI on
+2026-03-07 as semantic tool-discovery middleware for MCP. Its dependency list — a web
+framework, an ASGI server, SSE, JWT — makes it **a server you run and operate**, and it has
+not shipped a second release.
+
+acri's daylight is the form factor: **an import, not a service.** No daemon, no port, no
+proxy, works offline, and it never becomes another thing to deploy.
+
+## 6.6 Serialization
+
+Tool schemas stay as compact JSON. [TOON](https://github.com/toon-format/toon) is a strong
+format, but its own documentation says compact JSON often wins outright for deeply nested,
+non-uniform data — which is exactly the shape of a JSON Schema tool definition. Its
+advertised savings are also measured against pretty-printed JSON rather than the compact
+JSON every SDK actually sends.
+
+Where TOON earns its place is **tool results**: uniform tabular data such as query rows or
+issue lists, which are never cached and are frequently the largest thing in the context.
+That belongs to `press`, and lands with `press`. See [decisions.md](decisions.md).
 
 ## 7. Claims this project does not make
 

@@ -57,6 +57,44 @@ second number, never the headline.**
 **Kept:** MCP indexing, query-aware resolution, provider adapters, a small pre-generation
 router, an exact-match cache. That is the library.
 
+## Retrieval must never be the safety boundary
+
+A tool described as "delete a table" and one described as "read from a table" both match the
+query *"delete table users"* — on exact tokens **and** on meaning. No ranking function
+separates them reliably, because they are genuinely similar. Better retrieval narrows that
+gap; it never closes it.
+
+So the boundary has to be somewhere else:
+
+- **Retrieval decides what the model sees.** That is all it decides.
+- **A destructive tool must be marked at registration** and require explicit confirmation
+  before execution, no matter how confidently it was retrieved or how sure the model sounds.
+- A ranking score is **never** an authorization. Rank 1 at 0.99 confidence is still just a
+  suggestion about relevance.
+
+This is the same rule as [architecture.md §4.3](architecture.md) — `gate` may influence what
+is offered, never veto what is chosen — pointed the other way. acri is allowed to be wrong
+about relevance. It is not allowed to be the only thing standing between a query and
+`DROP TABLE`.
+
+## Ranking: lexical first, dense second, fusion only with a receipt
+
+Pure dense retrieval fails in two documented ways: semantically opposite queries collide
+when they share vocabulary (*"delete table users"* / *"select from table users"*), and rare
+exact tokens get smeared away (`v2`, `ec2` in `get_ec2_instances_v2`).
+
+Both of those failures are arguments for the **lexical** half, which is why BM25 is the
+default and ships with zero dependencies. Embeddings address a different failure — pure
+synonym gaps where no token overlaps at all (*"check forecast"* → `get_weather`).
+
+Sequencing, each stage earning its dependency:
+
+| Stage | What | Gate to adopt |
+|-------|------|---------------|
+| 1 | BM25 alone | Ships in v0.1. No dependencies. |
+| 2 | Optional caller-supplied encoder, fused with BM25 | Only if `assay` shows fusion beats lexical alone on a real MCP catalog |
+| 3 | Hierarchical / tree routing | Not planned. Flat search degrades gracefully — a bad match still leaves the right tool at rank 4. Tree routing fails hard: route into the wrong branch and the right tool is unreachable at any k. Revisit only at catalog sizes where flat search measurably breaks. |
+
 ## Serialization: where TOON goes
 
 [TOON](https://github.com/toon-format/toon) is real and well-built. It is also frequently
@@ -118,6 +156,50 @@ The problem is real enough that others reached for it; the form factor is still 
 | **v0.2** | `ledger` + `assay`. Receipts, then benchmarks. Nothing is claimed before this ships. |
 | **v0.3** | Pre-generation router (capability 1, the surviving half). Exact-match cache. |
 | **later** | `press` with TOON for tabular tool results. Local-model support. TurboQuant only if local inference lands. |
+| **v1.0** | `daemon` — a long-lived process holding a warm index, exposing the same resolution over a local endpoint. See the rule below. |
+| **v1.1** | `sandbox` — execute untrusted MCP servers inside a container with CPU, memory, and network limits, by **calling** the host container engine, never reimplementing one. |
+
+### The two runtime modes, and the rule that keeps them honest
+
+acri is meant to have exactly two modes:
+
+| Mode | How it's used | Status |
+|------|---------------|--------|
+| **In-process library** | `import acri` — no process, no port, no daemon | **The product.** Ships first. |
+| **Daemon** | `acri up` — long-lived service, warm index, local endpoint | Real, planned, **v1.0** |
+
+**The rule: the daemon is a thin wrapper over the library, never a superset.** `acri up` must
+call the same `resolve()` that `import acri` calls. The moment the daemon gains a capability
+the library does not have, the library becomes the degraded option and the project has
+quietly become a service.
+
+That rule exists for a specific reason. The one comparable project that shipped this shape —
+`openclaw-toolsearch`, PyPI 2026-03-07 — shipped it **as a server first** (FastAPI, uvicorn,
+SSE, JWT) and has not published a second release. Requiring users to run a service before
+they can try a tool resolver is the failure mode, not the feature. The whole competitive
+position is *an import, not a service*; building the service first spends exactly that.
+
+So the daemon is built **after** the library has users who want it, not before.
+
+### On sandboxing MCP tools
+
+Legitimate, and worth doing eventually — with two clarifications:
+
+- **MCP already separates processes.** An MCP server is a subprocess or a remote HTTP
+  endpoint, not code running inside your interpreter. The genuine gap acri would close is
+  *resource and network limits* on stdio servers, not process separation.
+- **Call the container engine; never write one.** Isolation comes from the host kernel's
+  namespaces and cgroups, reached through the already-privileged container daemon. Writing
+  that layer is writing `runc`.
+
+### Two corrections to the proposed module layout
+
+Recorded so they do not get re-litigated:
+
+- **`compass` does not do tree routing.** See the ranking table above — flat search degrades
+  gracefully, tree routing fails hard. Not planned.
+- **`compass` does not do TOON encoding.** TOON goes to `press`, on tool *results*. Schemas
+  stay compact JSON, for the reason in the serialization section below.
 
 ## Dependencies we refuse
 

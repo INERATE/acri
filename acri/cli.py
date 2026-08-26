@@ -1,93 +1,41 @@
-"""cli — init/check/up/studio. `up`/`studio` ship ahead of decisions.md's
-own gates -- see acri/server.py, acri/studio.py.
-"""
+"""cli — argv parsing and dispatch only. Handlers live in _commands.py."""
 from __future__ import annotations
 
-import argparse
 import sys
-from pathlib import Path
+from argparse import ArgumentParser
 
-from ._setup import ensure_config, run_safely
-from ._template import TEMPLATE
-
-
-def _init(args: argparse.Namespace) -> int:
-    path = Path(args.path)
-    if path.exists():
-        print(f"{path} already exists -- not overwriting.", file=sys.stderr)
-        return 1
-    path.write_text(TEMPLATE, encoding="utf-8")
-    print(f"wrote {path}")
-    return 0
-
-
-def _check(args: argparse.Namespace) -> int:
-    try:
-        from .config import from_yaml  # lazy
-        from .credentials import missing_env_vars
-    except ImportError:
-        print("acri check needs PyYAML -- pip install pyacri[yaml]", file=sys.stderr)
-        return 1
-    path = Path(args.path)
-    if (code := ensure_config(path)) is not None:
-        return code
-    missing = missing_env_vars(from_yaml(path))
-    if missing:
-        print("missing credentials:")
-        for var in missing:
-            print(f"  {var}")
-        return 1
-    print(f"ok - {path} is valid, all credentials present")
-    return 0
-
-
-def _up(args: argparse.Namespace) -> int:
-    try:
-        from .server import serve  # lazy
-    except ImportError:
-        print("acri up needs mcp and PyYAML -- pip install pyacri[server]", file=sys.stderr)
-        return 1
-    if (code := ensure_config(Path(args.path))) is not None:
-        return code
-    return run_safely("acri up", serve, args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
-
-
-def _studio(args: argparse.Namespace) -> int:
-    try:
-        from .studio import serve_studio  # lazy
-    except ImportError:
-        print("acri studio needs PyYAML -- pip install pyacri[studio]", file=sys.stderr)
-        return 1
-    if (code := ensure_config(Path(args.path))) is not None:
-        return code
-    return run_safely("acri studio", serve_studio, args.path, ledger_path=args.ledger, host=args.host, port=args.port)
+from . import _commands as cmd
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="acri", description="A client-side capability resolver -- pick the right few tools before the request is sent.")
+    parser = ArgumentParser(prog="acri", description="A client-side capability resolver -- pick the right few tools before the request is sent.")
     sub = parser.add_subparsers(dest="command")
+
+    p_setup = sub.add_parser("setup", help="guided acri.yaml setup: provider, one mcp server, a credential check")
+    p_setup.add_argument("path", nargs="?", default="acri.yaml")
+    p_setup.set_defaults(func=cmd.setup)
 
     p_init = sub.add_parser("init", help="write a template acri.yaml")
     p_init.add_argument("path", nargs="?", default="acri.yaml")
-    p_init.set_defaults(func=_init)
+    p_init.set_defaults(func=cmd.init)
 
     p_check = sub.add_parser("check", help="validate acri.yaml and its credentials")
     p_check.add_argument("path", nargs="?", default="acri.yaml")
-    p_check.set_defaults(func=_check)
+    p_check.set_defaults(func=cmd.check)
 
     p_up = sub.add_parser("up", help="run the daemon: an OpenAI-compatible endpoint over acri.yaml's tools")
     p_up.add_argument("path", nargs="?", default="acri.yaml")
     p_up.add_argument("--host", default="127.0.0.1")
     p_up.add_argument("--port", type=int, default=8080)
     p_up.add_argument("--log-conversations", action="store_true")
-    p_up.set_defaults(func=_up)
+    p_up.set_defaults(func=cmd.up)
 
     p_studio = sub.add_parser("studio", help="run the read-only dashboard over acri.yaml and the ledger")
     p_studio.add_argument("path", nargs="?", default="acri.yaml")
     p_studio.add_argument("--ledger", default=".acri/ledger.jsonl")
     p_studio.add_argument("--host", default="127.0.0.1")
     p_studio.add_argument("--port", type=int, default=8099)
-    p_studio.set_defaults(func=_studio)
+    p_studio.set_defaults(func=cmd.studio)
 
     args = parser.parse_args(argv)
     if args.command is None:  # bare `acri` -- help, not an error, since nothing went wrong

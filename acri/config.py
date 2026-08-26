@@ -23,11 +23,12 @@ class ModelsConfig:
 
 
 @dataclass(frozen=True)
-class SandboxConfig:  # v1.1 resource/network limits -- see acri.sandbox.sandboxed()
+class SandboxConfig:  # v1.1 resource/network/volume limits -- see acri.sandbox.sandboxed()
     image: str
     memory: str = "256m"
     cpus: float = 0.5
     network: bool = True
+    volumes: dict[str, str] | None = None  # host path -> container path
 
 
 @dataclass(frozen=True)

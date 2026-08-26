@@ -70,3 +70,20 @@ def test_run_rejects_an_unknown_provider():
     corpus = index([Tool(name="noop", description="does nothing")])
     with pytest.raises(ValueError):
         acri.run("hello", corpus, client=object(), provider="not-a-provider")
+
+
+def test_run_always_offers_find_more_tools_but_the_ledger_stays_clean():
+    """architecture.md #4.1: compass always includes the escape hatch -- but it's
+    wire-level scaffolding, not a resolution candidate, so it must reach the
+    provider without showing up in the ledger's `offered` or the cache key."""
+    corpus = index([Tool(name="get_weather", description="Get the current weather for a city")])
+
+    def create(**kwargs):
+        names = [t["function"]["name"] for t in kwargs["tools"]]
+        assert names == ["get_weather", "find_more_tools"]
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="ok", tool_calls=None))])
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    ledger = Ledger()
+    acri.run("weather", corpus, client, provider="openai", k=1, ledger=ledger)
+    assert ledger.entries[0].offered == ["get_weather"]

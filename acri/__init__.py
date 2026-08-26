@@ -17,6 +17,7 @@ from .adapters import from_callables, from_mcp_tools
 from .compass import Resolved
 from .compass import resolve as _compass_resolve
 from .corpus import Corpus, Tool, index
+from .escape_hatch import FIND_MORE_TOOLS, find_more_tools
 from .ledger import Entry, Ledger
 from .port import GenerationResult, cached_call, gemini, openai_compatible
 from .router import route
@@ -24,6 +25,7 @@ from .router import route
 __all__ = [
     "Tool", "Corpus", "index", "from_callables", "from_mcp_tools",
     "Resolved", "resolve",
+    "FIND_MORE_TOOLS", "find_more_tools",
     "GenerationResult", "gemini", "openai_compatible",
     "Entry", "Ledger",
     "run",
@@ -61,9 +63,10 @@ def run(
     model = route(model, cheap_model)
     start = time.time()
     resolved = _compass_resolve(query, corpus, k)
+    offered = [*resolved, Resolved(tool=FIND_MORE_TOOLS, score=0.0)]
     key = (provider, model, query, tuple(r.tool.name for r in resolved))
     kwargs = {"model": model} if model else {}
-    result = cached_call(call, cache, key, client, query, resolved, **kwargs)
+    result = cached_call(call, cache, key, client, query, offered, **kwargs)
     if ledger is not None:
         selected = [c["name"] for c in result.tool_calls]
         ledger.record(query, resolved, selected, (time.time() - start) * 1000)

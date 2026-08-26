@@ -20,7 +20,7 @@ from .sandbox import sandboxed
 def _stdio_params(entry: McpEntry) -> StdioServerParameters:
     if entry.sandbox:
         s = entry.sandbox
-        return sandboxed(entry.command, s.image, memory=s.memory, cpus=s.cpus, network=s.network)
+        return sandboxed(entry.command, s.image, memory=s.memory, cpus=s.cpus, network=s.network, volumes=s.volumes)
     return StdioServerParameters(command=entry.command[0], args=entry.command[1:])
 
 

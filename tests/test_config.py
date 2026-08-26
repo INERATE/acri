@@ -70,6 +70,13 @@ def test_from_yaml_parses_a_sandboxed_mcp_entry(tmp_path):
     assert sandbox.memory == "256m"  # unset fields keep SandboxConfig's own defaults
 
 
+def test_from_yaml_parses_sandbox_volumes(tmp_path):
+    text = ('version: 1\nmcp:\n  - name: fs\n    command: ["npx", "-y", "some-server"]\n'
+            '    sandbox:\n      image: node:20-slim\n      volumes:\n        /host/repo: /repo\n')
+    config = from_yaml(_write(tmp_path, text))
+    assert config.mcp[0].sandbox.volumes == {"/host/repo": "/repo"}
+
+
 def test_from_yaml_rejects_sandbox_on_a_url_entry(tmp_path):
     text = 'version: 1\nmcp:\n  - name: broken\n    url: http://localhost:1\n    sandbox:\n      image: x\n'
     with pytest.raises(ValueError):

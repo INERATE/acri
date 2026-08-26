@@ -40,3 +40,17 @@ def test_check_passes_when_credentials_are_present(tmp_path, monkeypatch):
 
 def test_check_fails_on_a_missing_file(tmp_path):
     assert main(["check", str(tmp_path / "nope.yaml")]) == 1
+
+
+def test_up_fails_cleanly_on_a_missing_config_instead_of_a_traceback(tmp_path, monkeypatch, capsys):
+    """The bug this regression-tests: `acri up`/`acri studio` used to let
+    FileNotFoundError escape all the way to a raw Python traceback."""
+    monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+    assert main(["up", str(tmp_path / "nope.yaml")]) == 1
+    assert "run `acri init` first" in capsys.readouterr().err
+
+
+def test_studio_fails_cleanly_on_a_missing_config_instead_of_a_traceback(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+    assert main(["studio", str(tmp_path / "nope.yaml")]) == 1
+    assert "run `acri init` first" in capsys.readouterr().err

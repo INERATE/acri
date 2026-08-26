@@ -16,7 +16,7 @@ from pathlib import Path
 from acri.adapters import from_mcp_tools
 from acri.corpus import Tool
 
-_DATA = json.loads((Path(__file__).parent / "fixtures.json").read_text(encoding="utf-8"))
+_DEFAULT = Path(__file__).parent / "fixtures.json"
 
 
 @dataclass(frozen=True)
@@ -25,12 +25,17 @@ class GoldQuery:
     tool: str | None  # None means: no tool in the corpus should match
 
 
-def load_tools() -> list[Tool]:
+def _load(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_tools(path: Path = _DEFAULT) -> list[Tool]:
     # fixtures.json stores each tool as a real MCP tools/list entry
     # (inputSchema included) and goes through the same adapter a live MCP
-    # server's response would -- see assay/mcp_live.py.
-    return from_mcp_tools(_DATA["tools"])
+    # server's response would -- see assay/mcp_live.py. `path` defaults to
+    # the 100-tool corpus; assay/scale.py points it at fixtures_500.json.
+    return from_mcp_tools(_load(path)["tools"])
 
 
-def load_gold() -> list[GoldQuery]:
-    return [GoldQuery(query=g["query"], tool=g["tool"]) for g in _DATA["gold"]]
+def load_gold(path: Path = _DEFAULT) -> list[GoldQuery]:
+    return [GoldQuery(query=g["query"], tool=g["tool"]) for g in _load(path)["gold"]]

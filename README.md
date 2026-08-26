@@ -170,6 +170,28 @@ p95 0.087ms ([`assay/latency.py`](assay/latency.py)). Not headlined on purpose �
 [`docs/decisions.md`](docs/decisions.md) for why resolver latency is beside the point
 against a network call measured in hundreds of milliseconds.
 
+### Does it hold up at scale?
+
+[`assay/scale.py`](assay/scale.py) reruns recall@k and latency against
+[`assay/fixtures_500.json`](assay/fixtures_500.json) — the same 100 tools and 52 gold queries
+above, plus ~400 more tools across ~40 new domains (gitlab and bitbucket alongside github,
+discord and telegram alongside slack, and so on), so corpus size is the only thing that
+changed. It isn't: recall@5 drops from 100% to 92%, recall@1 from 74% to 60% — [`assay/scale.py`](assay/scale.py).
+Latency stays fast — p50 0.179ms, p95 0.285ms at 504 tools, still nothing against a network
+call. The context-window case gets stronger, not weaker, at this scale: 5 of 504 tools shown is a 99% reduction — [`assay/scale.py`](assay/scale.py), the same
+arithmetic the 100-tool table above already uses. Recall genuinely degrades, though, and
+that's the metric that matters more than either latency or the reduction percentage.
+
+The honest reason, checked query by query rather than assumed: BM25 has no semantic
+understanding, so once a real lexical competitor exists it can win. "Is PR 42 on the
+acme/webapp repo merged" now out-scores `github_get_pull_request` with `bitbucket`'s own
+pull-request tools, because neither tool's description names its own platform and the query
+doesn't say which host it means — a gap the original 100-tool corpus never had to close, since
+no second git host existed to be confused with. Not patched: rewording the query toward the
+answer or adding an alias here would be tuning the benchmark, not fixing the resolver — see
+`docs/decisions.md`'s "Corrected twice, both times in public" for why that line gets held.
+Reproduce: `python -m assay.scale`.
+
 ### Diagrams
 
 ![acri resolution flow: corpus.index once, compass.resolve per query, top 5 of 100 tools sent to port](https://raw.githubusercontent.com/INERATE/acri/main/docs/assets/resolution-flow.svg)

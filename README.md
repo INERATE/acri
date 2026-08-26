@@ -47,6 +47,8 @@ acri
 ├── compass   the resolver — intent in, the right k tools out           ← the core
 ├── router    the tier picker — cheap/strong model, chosen once, before generating
 ├── port      provider adapters — gemini · openai-compatible (OpenAI, vLLM, Ollama, ...)
+├── config    acri.yaml — declares capabilities and limits, never control flow
+├── daemon    the OpenAI-shaped handler `acri up` will serve — no socket yet
 ├── gate      the necessity check — does this turn need a tool at all?  (advisory)
 ├── press     the compactor — big payloads to short digests + a handle
 ├── ledger    the decision trace — what was chosen, skipped, and what it cost
@@ -185,6 +187,7 @@ that measured it. If a future version adds `studio` (the real trace visualizer �
 | **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected twice after the benchmark itself was found to be flawed, both times in public. |
 | **v0.3** | Pre-generation router, exact-match cache | **Shipped.** Cache: `acri.run(..., cache={})` skips a repeated (provider, model, query, offered tools) call — [`acri/port.py`](acri/port.py)'s `cached_call`. Router: `acri.run(..., cheap_model=...)` routes one call to a cheaper tier, once, before generating — [`acri/router.py`](acri/router.py). Eligibility (is this call stateless and prefix-free?) is the caller's judgment, not acri's — see `docs/architecture.md` §4.4. Tests: [`tests/test_ports.py`](tests/test_ports.py), [`tests/test_router.py`](tests/test_router.py), [`tests/test_integration.py`](tests/test_integration.py). |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
+| **v1.0** | `daemon` — long-lived process, OpenAI-compatible HTTP endpoint | **Gated, partially staged.** `docs/decisions.md`: "the daemon is built after the library has users who want it, not before" — not met yet, so `acri up` itself is not started. What opens no socket was built ahead of that gate: `acri.yaml` + [`acri/config.py`](acri/config.py)'s `from_yaml`, the `acri init`/`acri check` CLI ([`acri/cli.py`](acri/cli.py)), and [`acri/daemon.py`](acri/daemon.py)'s request handler — proof that the eventual daemon calls the same `acri.run()` the library does, not a reimplementation. Tests: [`tests/test_config.py`](tests/test_config.py), [`tests/test_cli.py`](tests/test_cli.py), [`tests/test_daemon.py`](tests/test_daemon.py). |
 
 ## The claims policy
 

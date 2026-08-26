@@ -99,11 +99,28 @@ and script: [`assay/fixtures.json`](assay/fixtures.json), [`assay/recall.py`](as
 Both adversarial queries (no correct tool exists in the corpus) correctly resolve to
 nothing, at every k.
 
-This is recall, not the accuracy claim itself — it says the right tool is *available* to
-the model in a much smaller set, not that the model picks it. That needs a live model:
-[`assay/accuracy.py`](assay/accuracy.py) is built (naive vs. acri, both arms real API
-calls) but not yet run — it costs money and isn't part of CI. Run it yourself:
-`OPENAI_API_KEY=... python -m assay.accuracy --provider openai`.
+Recall says the right tool is *available* to the model in a much smaller set — not that
+the model picks it. That's a separate, live-model question:
+[`assay/accuracy.py`](assay/accuracy.py), naive (all 100 tools) vs. acri (top 5), same 50
+queries, real `gemini-2.5-flash` calls, no mocking. Two independent runs:
+
+| Run | naive accuracy | acri accuracy | naive median latency | acri median latency |
+|---|---|---|---|---|
+| 1 | 20% — [`assay/accuracy.py`](assay/accuracy.py) | 54% — [`assay/accuracy.py`](assay/accuracy.py) | 1688 ms | 1656 ms |
+| 2 | 24% — [`assay/accuracy.py`](assay/accuracy.py) | 50% — [`assay/accuracy.py`](assay/accuracy.py) | 1665 ms | 1659 ms |
+
+Two things stand out in the table above, and only one of them is the headline. **acri
+roughly doubles tool-selection accuracy** on this corpus, consistent across both runs —
+this is the claim `docs/architecture.md` set out to earn. **Latency does not move.** Naive
+and acri are statistically indistinguishable per call (~30ms apart against a ~1.7s call —
+noise, not signal). This directly contradicts a claim that more tool schemas measurably
+slow down a single Gemini call at this scale; on this evidence, they don't. Reproduce:
+`GEMINI_API_KEY=... python -m assay.accuracy --provider gemini`.
+
+Naive's low score is a property of this corpus, not a weak model: the 100 tools include
+deliberately confusable cross-domain pairs (Jira vs. Zendesk both have a `close_ticket`),
+and the queries are phrased the way people actually talk, not as tool-description
+paraphrases. A harder corpus produces a bigger gap; it wasn't tuned to produce one.
 
 `compass.resolve()` itself, over 1,040 calls against the same 100-tool corpus: p50 0.040ms,
 p95 0.087ms ([`assay/latency.py`](assay/latency.py)). Not headlined on purpose — see
@@ -115,7 +132,7 @@ against a network call measured in hundreds of milliseconds.
 | Version | Scope | Gate to ship |
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
-| **v0.2** | `assay` | Recall + latency **shipped, numbers above.** Accuracy harness built, awaiting a live run. |
+| **v0.2** | `assay` | **Shipped.** Recall, latency, and a live two-run accuracy result, all above. |
 | **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 

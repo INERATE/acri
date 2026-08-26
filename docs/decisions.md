@@ -456,7 +456,7 @@ memory, higher accuracy, no hallucination. Sorted by whether they can be defende
 
 | Claim | Status |
 |---|---|
-| Improves tool-selection accuracy on large toolsets | **Earnable.** Two-arm `assay/accuracy.py`: naive (every tool shown) vs. acri (resolved k shown). Not three-arm — "cache-enabled" was cut; caching changes cost, not which tools the model sees, so it can't move an accuracy number. This is the claim. |
+| Improves tool-selection accuracy on large toolsets | **Earned — see README.md.** Two-arm `assay/accuracy.py`, gemini-2.5-flash, two runs: naive 20-24%, acri 50-54%. Not three-arm — "cache-enabled" was cut; caching changes cost, not which tools the model sees, so it can't move an accuracy number. |
 | Frees context-window capacity | **Earnable.** Schemas occupy the window regardless of what they cost. |
 | Works where the provider ships no native tool search | **A fact**, not a claim. Free to state. |
 | Lowers cost | **Only against a named baseline.** Against a cache-enabled baseline it is false below roughly a tenfold reduction — see the rule at the top of this file. |

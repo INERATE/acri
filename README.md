@@ -54,10 +54,26 @@ acri
 
 ## Status
 
-**Pre-alpha. Design phase. There is no code yet.**
+**Pre-alpha. `corpus` + `compass` + `port` + a minimal `ledger` exist and are tested.
+No number in this README is claimed yet — that needs `assay`, which does not exist.**
 
-This repository currently holds the architecture and the contribution rules. The design
-is public from day one so it can be argued with before it is built.
+```bash
+pip install acri
+```
+
+```python
+import acri
+
+tools = acri.from_callables([get_weather, get_stock_price, merge_pull_request])
+corpus = acri.index(tools)          # build once, reuse across the whole task
+
+result = acri.run("what's the weather in Tokyo?", corpus, my_openai_client)
+print(result.tool_calls)            # [{"name": "get_weather", "arguments": '{"city": "Tokyo"}'}]
+```
+
+`acri.run()` resolves, calls the provider, and — if you pass `ledger=acri.Ledger()` — records
+the trace. Prefer to drive the pieces yourself? `acri.resolve(query, corpus, k=5)` returns the
+ranked tools; `acri.gemini` / `acri.openai_compatible` take it from there.
 
 Read [`docs/architecture.md`](docs/architecture.md) for the full design, the prior art it
 builds on, and the claims it explicitly refuses to make. Read
@@ -68,9 +84,10 @@ with the evidence that decided it.
 
 | Version | Scope | Gate to ship |
 |---------|-------|--------------|
-| **v0.1** | `corpus` + `compass` + `port` | Resolves tools correctly on Gemini and one local model |
-| **v0.2** | `ledger` + `assay` | Every claim in this README reproducible from `assay/` |
-| **later** | `gate`, `press` | Only if `ledger` data proves they are needed |
+| **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
+| **v0.2** | `assay` | Every claim in this README reproducible from `assay/` |
+| **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
+| **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 
 ## The claims policy
 

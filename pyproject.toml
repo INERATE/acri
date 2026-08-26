@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "acri"
+version = "0.1.0"
+description = "A client-side capability resolver: pick the right few tools before the request is sent."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Piyush Sharma" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/INERATE/acri"
+
+[tool.hatch.build.targets.wheel]
+packages = ["acri"]

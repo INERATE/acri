@@ -26,7 +26,7 @@
   <g>
     <rect x="460" y="90" width="170" height="90" rx="8" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1.5"/>
     <text x="545" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="#7c3aed">top 5 of 100</text>
-    <text x="545" y="140" text-anchor="middle" font-size="11" fill="#334155">95% fewer tools shown</text>
+    <text x="545" y="140" text-anchor="middle" font-size="11" fill="#334155">95% fewer tools shown</text><!-- assay/recall.py -->
     <text x="545" y="156" text-anchor="middle" font-size="11" fill="#334155">assay/recall.py</text>
   </g>
   <line x1="630" y1="135" x2="668" y2="135" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>

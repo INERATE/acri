@@ -201,6 +201,282 @@ Recorded so they do not get re-litigated:
 - **`compass` does not do TOON encoding.** TOON goes to `press`, on tool *results*. Schemas
   stay compact JSON, for the reason in the serialization section below.
 
+## Resolution does not understand the query — and must not
+
+`compass` performs no language understanding. BM25 scores query terms against tool names and
+descriptions, weighting terms that are rare across the corpus. It has no concept of what a
+"pull request" *is*; it knows the token appears in few enough tool descriptions to
+discriminate between them.
+
+That is not a limitation to engineer away — it is the reason the design works at all.
+Understanding costs a model call. The split:
+
+| Stage | Job | Wrong in which direction |
+|---|---|---|
+| `compass` | **Recall.** Narrow N tools to k candidates. | May include irrelevant tools — the model discards them; the cost is tokens. |
+| The model | **Precision.** Choose one, write its arguments. | Already its job today, unchanged. |
+
+`compass` is allowed to be dumb because it is only allowed to be wrong in the cheap
+direction. Missing the correct tool entirely is the expensive failure, which is why
+`find_more_tools` is always present as an escape hatch (architecture §4.1).
+
+**The metric that matters is recall@k, not resolver latency.** A resolver taking one
+millisecond or ten is invisible against a network call — claiming otherwise is the same
+Amdahl's-law error that cut the gRPC bus. A resolver with poor recall fails the agent
+silently. `assay` measures recall first; latency is reported second and never headlined.
+
+Hybrid ranking (lexical and dense scored in parallel, then rank-fused) is the eventual
+shape, not a first step — see the ranking section above. v0.1 is BM25 alone.
+
+## The privilege ladder — what "kernel level" can and cannot mean
+
+Recorded because "register acri natively with the kernel" keeps returning, and the four
+things it could mean have wildly different costs.
+
+| Level | What it actually is | Gives you | Verdict |
+|---|---|---|---|
+| **1. Background service** | A `systemd` unit (Linux) or a Service Control Manager entry (Windows) | Starts at boot, survives logout, holds a warm index | **Yes — this is `daemon`, v1.0** |
+| **2. Process isolation** | A subprocess holding no credentials, whose only channel is a pipe to the parent | Real enforcement: the child *cannot* reach the network itself | **Yes — this is `sandbox`, v1.1** |
+| **3. Namespaces + cgroups** | Host-kernel features you *call*, through the container engine | CPU, memory, and network limits on untrusted tools | Linux only, reached through the container engine, never reimplemented |
+| **4. Kernel module / driver** | Code executing in ring 0 | Nothing this project needs | **Never** |
+
+Three things about that table matter more than the table.
+
+**A systemd unit is not privileged.** `systemd` is a launcher. A service registered with it
+has exactly the permissions of the user it runs as — the same permissions it would have if
+the command were typed into a terminal. "Registered with the operating system" and "running
+in the kernel" are unrelated statements, and only the first one is being offered.
+
+**Namespaces and cgroups are host-kernel features, not shipped code.** A container does not
+contain a kernel; it borrows the host's. So "ship the Linux kernel inside the image so acri
+gets kernel-level permission" resolves to one of two things: on Linux it is redundant, the
+kernel is already there; on Windows or macOS it means shipping a Linux **virtual machine**,
+which is what Docker Desktop does — a hypervisor dependency and hundreds of megabytes, to
+host a function whose work is measured in milliseconds.
+
+**Ring 0 would not make anything faster.** A syscall costs on the order of a hundred
+nanoseconds; a provider API round trip costs on the order of hundreds of milliseconds. No
+arrangement of kernel code meaningfully changes a number dominated by a datacenter round
+trip. On Windows the door is also shut: kernel drivers cannot be self-signed (Windows 10
+1607 onward), require an EV certificate bound to a validated company, and Microsoft has been
+reducing third-party kernel presence since the July 2024 CrowdStrike outage.
+
+**What gives an agent power over a machine is the permission set on its tools, not its
+ring.** An agent permitted to call `shell.exec` as root already has more reach than a driver
+would grant it. That is a policy problem, and policy is what levels 1–3 address.
+
+## Mediation is not enforcement
+
+"A child agent raises a request to the parent, the way a process raises a syscall" is the
+right shape, with one correction that has to survive contact with future contributors.
+
+A CPU mode bit works because the hardware traps a privileged instruction issued from ring 3.
+The child *cannot* proceed. That trap is what makes a kernel a security boundary.
+
+If the child agent is a Python function in the same interpreter, it can `import httpx` and
+call the tool directly. Nothing traps. In-process capability brokering is therefore
+**cooperative** — it works because the child asked, not because it had to.
+
+Still worth building. Cooperative mediation gives one place for quotas, one audit log, and
+one policy decision instead of N scattered ones. It is `malloc` over `sbrk`: a convention
+that pays for itself. It is simply not a boundary, and a document that calls it one will be
+discounted by every reader who knows the difference.
+
+| To get | You need |
+|---|---|
+| Quotas, audit trail, a single policy point | The convention. In-process, small. |
+| Actual enforcement | A process boundary: no credentials in the child, one pipe out. This is `sandbox`. |
+| Resource limits on untrusted code | Namespaces and cgroups, through the container engine. Linux. |
+
+Enforcement and `sandbox` are the same feature, not two.
+
+## Parallel execution — what is free and what is not
+
+Concurrency while tools run is real, and it is `asyncio`, not a thread pool. Tool calls are
+I/O; threads would add GIL contention and locking around a shared corpus for no gain.
+
+| Case | Verdict |
+|---|---|
+| The model emits several tool calls in one turn | `asyncio.gather`. One line. Real win. |
+| Independent agents running concurrently | Same mechanism. Free. |
+| Running a tool the model has not asked for yet | **No.** |
+
+The last row needs stating. The opportunity for parallelism is bounded by what the model
+emits — if it requests one tool, there is nothing to overlap, and the wait is on the model,
+not the tool. Speculating past that means paying for calls that get discarded, and worse: a
+speculatively executed `send_email` sends an email. Any future speculative execution
+requires an explicit `read_only` annotation on the tool, defaulting to false.
+
+## `studio` — the trace visualizer
+
+Accepted, with a boundary. It is the first proposed addition that cannot make the core
+wrong, because it only ever reads.
+
+- `ledger` emits structured events — resolution start, per-candidate scores, tool start and
+  finish, model call with token counts — as JSONL.
+- `studio` is a **separate optional install** (`pip install acri[studio]`) that consumes that
+  stream. The core never imports it.
+- Off by default. Live mode tails the ledger, or subscribes to a local socket the core
+  publishes to **only when a subscriber exists**.
+- Two views: the static mesh — every registered capability, model, and MCP server — and the
+  live trace, showing one request moving through resolution, model, and tools.
+
+Why it earns its place when so much else did not:
+
+1. It is the product surface for `ledger`. Nobody adopts a JSONL file.
+2. It is the demo. One recording of resolution happening live does more for adoption than
+   another design document.
+3. **It makes the claims falsifiable in public.** When `compass` picks a bad tool, the user
+   watches it happen. For a project whose origin was a document full of invented benchmark
+   numbers, an honesty device that runs by default in development is worth building.
+
+Two corrections to the proposal:
+
+- **Not "zero overhead."** Writing ledger events costs serialization and I/O even with nobody
+  watching. Small, and off the hot path if buffered — but it is a number, and numbers in this
+  repo come from `assay/` runs.
+- **Emit OpenTelemetry spans, not a private format.** The trace shape is a solved standard.
+  Spans mean Jaeger, Grafana Tempo, and Honeycomb work at no cost, and `studio` becomes one
+  consumer among several rather than the only way to see anything.
+
+The boundary to hold: **`studio` may only display what `ledger` would record anyway for
+debugging.** When the visualizer wants a new field, the test is "would this belong in a bug
+report?" If not, it is not emitted. Otherwise the observability layer starts dictating the
+shape of the core, which is how observability layers metastasize.
+
+## The daemon's HTTP surface
+
+When `daemon` lands, its endpoint is **OpenAI-compatible** (`/v1/chat/completions`) — the
+lazy choice with the largest payoff. The OpenAI SDK, LangChain, LlamaIndex, Cursor,
+Continue, Open WebUI and plain `curl` already speak it. vLLM, Ollama, and LM Studio all made
+the same call.
+
+The streaming flow, written down because it is routinely misdescribed:
+
+1. The request arrives. Resolution runs **before any token is generated** — it is not inside
+   the token stream.
+2. Tokens stream back over server-sent events.
+3. The model emits a tool-call block and **stops generating.** The pause a user perceives
+   here is the tool's own latency plus one additional provider round trip. It is not acri
+   overhead, and acri cannot remove it.
+4. The tool result is appended as a new message; generation resumes.
+
+Two obligations that arrive with being in the request path, recorded now because they are
+easy to forget later:
+
+- **Bind to localhost by default.** A capability resolver holding provider credentials and
+  listening on `0.0.0.0` is a credential proxy for the whole network.
+- **Never log message bodies at the default level.** `ledger` records decisions, scores, and
+  token counts. Conversation content is opt-in.
+
+A library that fails to import fails loudly, at startup, on the developer's machine. A daemon
+that goes down takes the application with it. That asymmetry is why the library ships first
+and the daemon stays a thin wrapper over it.
+
+## Agents are capability nodes, and this costs nothing
+
+`corpus` indexes a name, a description, and a schema. It neither knows nor cares whether the
+thing behind that name is a Python function, an MCP tool, an HTTP endpoint, or another agent.
+So "connect an existing LangChain or AutoGen agent into the mesh" needs **no new machinery in
+`compass`** — it is a `corpus` entry plus an invoke path in `port`.
+
+That property is already true of the v0.1 design and belongs in the README, because it is the
+cheapest large capability in the project.
+
+What not to build: framework-specific adapters, preemptively. Each is a dependency on
+somebody else's fast-moving API. acri accepts **any callable** and **any HTTP endpoint**; a
+user with a LangChain agent wraps it in a function in three lines. Ship an adapter when an
+issue asks for one, named after the framework that asked.
+
+Dispatch is a function call or an HTTP request. Not gRPC — see the refusals below.
+
+## `acri.yaml` — declarative configuration
+
+Accepted, and possibly the most important adoption decision in the project. People learn
+Docker by learning `docker-compose.yml`. The file *is* the mental model; the API is an
+implementation detail. If acri is meant to be learned the way Spring Boot and AWS are
+learned, the thing being learned is a file format.
+
+It declares what exists:
+
+```yaml
+version: 1
+models:
+  default: gemini-2.5-flash
+  cheap:   gemini-2.5-flash-lite    # stateless calls only — architecture §4.4
+mcp:
+  - name: github
+    command: ["npx", "-y", "@modelcontextprotocol/server-github"]
+  - name: postgres
+    url: http://localhost:3001
+resolve:
+  k: 5
+limits:
+  timeout_ms: 5000
+  max_cost_per_task_usd: 0.05
+```
+
+Two boundaries:
+
+**It declares capabilities and limits. Never control flow.** The moment the file grows
+`steps:`, `on_error:`, or conditionals, it is a programming language expressed in YAML, and
+every tool that took that road regrets it. `docker-compose.yml` has aged well precisely
+because it only ever declared services.
+
+**`max_cost_per_task_usd` is a budget check, not a cgroup.** It is a running token count and
+a refusal to make the next call — cooperative, bypassable, and genuinely useful. Naming it
+after a kernel primitive invites the reader to expect enforcement that is not there.
+
+The setup experience is `acri init`, which writes a commented template, and `acri check`,
+which validates it and names the credentials that are missing. That is most of the value of
+an interactive wizard for a fraction of the code. A full terminal wizard can follow if anyone
+asks for one.
+
+## Languages
+
+One, for now: **Python.**
+
+Every additional language is a second build matrix, a second test suite, a second release
+process, and a permanent risk of the two implementations drifting apart — carried by a
+project with no users yet.
+
+| Language | When |
+|---|---|
+| **Python** | Now. |
+| **TypeScript** | A real gap, and the JavaScript agent ecosystem is large. Port after the Python package has users, never in parallel with it. |
+| **Rust / C++** | Only if `assay` shows Python ranking is a measurable share of a turn. Against a network call that dominates it, that is close to arithmetically impossible. |
+
+The sandbox does not change this. Namespaces and cgroups are reached by calling the container
+engine, which is a subprocess call — available from Python without a compiler.
+
+## The claim, in one sentence
+
+Draft summaries have accumulated several claims at once: lower cost, faster execution, better
+memory, higher accuracy, no hallucination. Sorted by whether they can be defended:
+
+| Claim | Status |
+|---|---|
+| Improves tool-selection accuracy on large toolsets | **Earnable.** Three-arm `assay/` baseline: naive, cache-enabled, acri. This is the claim. |
+| Frees context-window capacity | **Earnable.** Schemas occupy the window regardless of what they cost. |
+| Works where the provider ships no native tool search | **A fact**, not a claim. Free to state. |
+| Lowers cost | **Only against a named baseline.** Against a cache-enabled baseline it is false below roughly a tenfold reduction — see the rule at the top of this file. |
+| Faster execution | **Not directly.** A resolver runs against a network call that dominates it. The defensible version is *fewer turns*: a model that picks correctly the first time does not spend a turn recovering. Second-order, and a better story. |
+| Runs 24/7 cheaply | **A daemon property**, not a resolver property — no polling, no model held warm. |
+| Better intelligence, no hallucination | **Not claimable.** A smaller choice set makes wrong choices rarer, not impossible. One counterexample destroys an absolute claim. |
+
+The defensible sentence:
+
+> acri is a client-side capability resolver. Given a query and hundreds of registered tools,
+> it selects the few that matter before the request is sent — improving tool-selection
+> accuracy for providers that ship no native tool search, without invalidating the provider's
+> prompt cache.
+
+**The strongest contribution is the constraint, not the resolver.** Retrieval over tool
+schemas is published work (see architecture §6). What is not published is the consequence of
+prompt caching: per-turn tool retrieval *increases* cost, and the break-even is a reduction
+factor on the order of the cache discount. That finding reframes a whole category of "context
+optimization" work, and it is the part of this project nobody else has said.
+
 ## Dependencies we refuse
 
 Named here so the refusal survives a future contributor's good intentions:

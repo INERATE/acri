@@ -314,8 +314,9 @@ wrong, because it only ever reads.
 
 - `ledger` emits structured events — resolution start, per-candidate scores, tool start and
   finish, model call with token counts — as JSONL.
-- `studio` is a **separate optional install** (`pip install acri[studio]`) that consumes that
-  stream. The core never imports it.
+- `studio` is a **separate optional install** (`pip install pyacri[studio]` — PyPI's
+  distribution name; `import acri` and the `acri` command are unaffected, see
+  pyproject.toml) that consumes that stream. The core never imports it.
 - Off by default. Live mode tails the ledger, or subscribes to a local socket the core
   publishes to **only when a subscriber exists**.
 - Two views: the static mesh — every registered capability, model, and MCP server — and the

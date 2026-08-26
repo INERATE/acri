@@ -52,7 +52,7 @@ def serve_studio(config_path: str, ledger_path: str = ".acri/ledger.jsonl", host
     """Load acri.yaml (read-only) and block serving the dashboard. If `port` is
     already taken -- most likely another `acri studio` already running -- just
     open a browser at the existing instance instead of failing."""
-    from .config import from_yaml  # lazy: needs acri[yaml], same as cli.py's _check
+    from .config import from_yaml  # lazy: needs pyacri[yaml], same as cli.py's _check
 
     config = from_yaml(config_path)
     url = f"http://{host}:{port}/studio"

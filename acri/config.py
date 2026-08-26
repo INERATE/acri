@@ -2,7 +2,7 @@
 
 Declares capabilities and limits, never control flow -- no steps/on_error/
 conditionals, on purpose (see decisions.md). Requires PyYAML: `pip install
-acri[yaml]`. Not imported from acri/__init__.py, so `import acri` alone never
+pyacri[yaml]`. Not imported from acri/__init__.py, so `import acri` alone never
 needs it -- the core library stays dependency-free.
 """
 from __future__ import annotations

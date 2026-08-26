@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "acri"
+name = "pyacri"
 version = "0.3.0"
 description = "A client-side capability resolver: pick the right few tools before the request is sent."
 readme = "README.md"
@@ -33,10 +33,14 @@ server = ["PyYAML>=6", "mcp>=1"]
 # `acri studio` -- decisions.md named this extra explicitly ("a separate
 # optional install"). Same PyYAML need as yaml/server today; kept as its own
 # name because decisions.md's boundary is "the core never imports it", and a
-# reader typing `pip install acri[studio]` should get exactly that promise.
+# reader typing `pip install pyacri[studio]` should get exactly that promise.
 studio = ["PyYAML>=6"]
 release = ["build>=1", "twine>=5"]
 
+# Distribution name is "pyacri" (PyPI blocks names within edit-distance-1 of
+# an existing package -- acris/acr/acre already exist, all unrelated). The
+# CLI command and the import name are separate settings and stay "acri":
+# `pip install pyacri` still gives you `import acri` and the `acri` command.
 [project.scripts]
 acri = "acri.cli:main"
 

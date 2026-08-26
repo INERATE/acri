@@ -24,10 +24,10 @@ def _init(args: argparse.Namespace) -> int:
 
 def _check(args: argparse.Namespace) -> int:
     try:
-        from .config import from_yaml  # lazy: needs acri[yaml]
+        from .config import from_yaml  # lazy: needs pyacri[yaml]
         from .credentials import missing_env_vars
     except ImportError:
-        print("acri check needs PyYAML -- pip install acri[yaml]", file=sys.stderr)
+        print("acri check needs PyYAML -- pip install pyacri[yaml]", file=sys.stderr)
         return 1
     path = Path(args.path)
     if not path.exists():
@@ -45,9 +45,9 @@ def _check(args: argparse.Namespace) -> int:
 
 def _up(args: argparse.Namespace) -> int:
     try:
-        from .server import serve  # lazy: needs acri[server]
+        from .server import serve  # lazy: needs pyacri[server]
     except ImportError:
-        print("acri up needs mcp and PyYAML -- pip install acri[server]", file=sys.stderr)
+        print("acri up needs mcp and PyYAML -- pip install pyacri[server]", file=sys.stderr)
         return 1
     serve(args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
     return 0
@@ -55,9 +55,9 @@ def _up(args: argparse.Namespace) -> int:
 
 def _studio(args: argparse.Namespace) -> int:
     try:
-        from .studio import serve_studio  # lazy: needs acri[yaml]
+        from .studio import serve_studio  # lazy: needs pyacri[yaml]
     except ImportError:
-        print("acri studio needs PyYAML -- pip install acri[studio]", file=sys.stderr)
+        print("acri studio needs PyYAML -- pip install pyacri[studio]", file=sys.stderr)
         return 1
     serve_studio(args.path, ledger_path=args.ledger, host=args.host, port=args.port)
     return 0

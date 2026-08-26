@@ -1,6 +1,6 @@
 """mcp_connect — connect to acri.yaml's mcp: entries once at startup, return their tools.
 
-Needs `mcp` (pip install acri[server]). Startup-only: `acri up` fetches
+Needs `mcp` (pip install pyacri[server]). Startup-only: `acri up` fetches
 tools/list, then closes every connection -- it never calls tools/call itself
 (the client executes tools, same as any OpenAI-compatible API), so nothing
 needs to stay open while serving requests.

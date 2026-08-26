@@ -14,9 +14,9 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
-# Only assay/accuracy.py needs either of these, and only if you run it — the
-# acri package itself stays dependency-free. Bring one, not both.
-assay = ["openai>=1", "google-genai>=1"]
+# Only the assay/ scripts that need them, and only if you run those scripts —
+# the acri package itself stays dependency-free.
+assay = ["openai>=1", "google-genai>=1", "mcp>=1"]
 
 [project.urls]
 Homepage = "https://github.com/INERATE/acri"

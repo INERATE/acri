@@ -14,6 +14,11 @@ the cost question with arithmetic, not a benchmark.
 Run with a key set:
     OPENAI_API_KEY=... python -m assay.accuracy --provider openai
     GEMINI_API_KEY=... python -m assay.accuracy --provider gemini
+    GOOGLE_APPLICATION_CREDENTIALS=... GOOGLE_CLOUD_PROJECT=... python -m assay.accuracy --provider vertex
+
+"vertex" reuses port.gemini() unchanged -- same wire format as the Developer
+API, only the auth differs (API key vs. ADC), which lives entirely in
+clients.py. Not a different model for comparison purposes, same weights.
 """
 from __future__ import annotations
 
@@ -31,7 +36,7 @@ from .report import print_accuracy_report
 def run(provider: str, k: int = 5) -> None:
     from acri.port import gemini, openai_compatible
 
-    call = {"openai": openai_compatible, "gemini": gemini}[provider]
+    call = {"openai": openai_compatible, "gemini": gemini, "vertex": gemini}[provider]
     client = CLIENTS[provider]()
 
     tools = load_tools()

@@ -39,3 +39,5 @@ Thumbs.db
 # private working notes — never published
 CLAUDE.md
 .private/
+docs/research/
+docs/internal/

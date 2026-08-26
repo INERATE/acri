@@ -1,6 +1,5 @@
-"""cli — `acri init` writes a template acri.yaml; `acri check` validates one;
-`acri up` runs the daemon; `acri studio` runs the dashboard. `up`/`studio`
-ship ahead of decisions.md's own gates -- see acri/server.py, acri/studio.py.
+"""cli — init/check/up/studio. `up`/`studio` ship ahead of decisions.md's
+own gates -- see acri/server.py, acri/studio.py.
 """
 from __future__ import annotations
 
@@ -8,6 +7,7 @@ import argparse
 import sys
 from pathlib import Path
 
+from ._setup import ensure_config, run_safely
 from ._template import TEMPLATE
 
 
@@ -23,15 +23,14 @@ def _init(args: argparse.Namespace) -> int:
 
 def _check(args: argparse.Namespace) -> int:
     try:
-        from .config import from_yaml  # lazy: needs pyacri[yaml]
+        from .config import from_yaml  # lazy
         from .credentials import missing_env_vars
     except ImportError:
         print("acri check needs PyYAML -- pip install pyacri[yaml]", file=sys.stderr)
         return 1
     path = Path(args.path)
-    if not path.exists():
-        print(f"{path} not found -- run `acri init` first.", file=sys.stderr)
-        return 1
+    if (code := ensure_config(path)) is not None:
+        return code
     missing = missing_env_vars(from_yaml(path))
     if missing:
         print("missing credentials:")
@@ -44,22 +43,24 @@ def _check(args: argparse.Namespace) -> int:
 
 def _up(args: argparse.Namespace) -> int:
     try:
-        from .server import serve  # lazy: needs pyacri[server]
+        from .server import serve  # lazy
     except ImportError:
         print("acri up needs mcp and PyYAML -- pip install pyacri[server]", file=sys.stderr)
         return 1
-    serve(args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
-    return 0
+    if (code := ensure_config(Path(args.path))) is not None:
+        return code
+    return run_safely("acri up", serve, args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
 
 
 def _studio(args: argparse.Namespace) -> int:
     try:
-        from .studio import serve_studio  # lazy: needs pyacri[yaml]
+        from .studio import serve_studio  # lazy
     except ImportError:
         print("acri studio needs PyYAML -- pip install pyacri[studio]", file=sys.stderr)
         return 1
-    serve_studio(args.path, ledger_path=args.ledger, host=args.host, port=args.port)
-    return 0
+    if (code := ensure_config(Path(args.path))) is not None:
+        return code
+    return run_safely("acri studio", serve_studio, args.path, ledger_path=args.ledger, host=args.host, port=args.port)
 
 
 def main(argv: list[str] | None = None) -> int:

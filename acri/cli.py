@@ -1,7 +1,6 @@
 """cli — `acri init` writes a template acri.yaml; `acri check` validates one;
-`acri up` runs the daemon; `acri studio` runs the read-only dashboard. Both
-ship ahead of decisions.md's own gates, at the maintainer's request -- see
-acri/server.py and acri/studio.py for specifics.
+`acri up` runs the daemon; `acri studio` runs the dashboard. `up`/`studio`
+ship ahead of decisions.md's own gates -- see acri/server.py, acri/studio.py.
 """
 from __future__ import annotations
 
@@ -64,8 +63,8 @@ def _studio(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(prog="acri")
-    sub = parser.add_subparsers(dest="command", required=True)
+    parser = argparse.ArgumentParser(prog="acri", description="A client-side capability resolver -- pick the right few tools before the request is sent.")
+    sub = parser.add_subparsers(dest="command")
 
     p_init = sub.add_parser("init", help="write a template acri.yaml")
     p_init.add_argument("path", nargs="?", default="acri.yaml")
@@ -90,6 +89,9 @@ def main(argv: list[str] | None = None) -> int:
     p_studio.set_defaults(func=_studio)
 
     args = parser.parse_args(argv)
+    if args.command is None:  # bare `acri` -- help, not an error, since nothing went wrong
+        parser.print_help()
+        return 0
     return args.func(args)
 
 

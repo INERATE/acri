@@ -1,6 +1,16 @@
 from acri.cli import main
 
 
+def test_bare_invocation_shows_help_instead_of_erroring(capsys):
+    """The first thing a new user types after installing is often just `acri`
+    with nothing else -- that should explain itself, not exit with an argparse
+    error (it did, before this test)."""
+    assert main([]) == 0
+    out = capsys.readouterr().out
+    assert "usage: acri" in out
+    assert "studio" in out  # every subcommand should be listed
+
+
 def test_init_writes_a_template(tmp_path):
     path = tmp_path / "acri.yaml"
     assert main(["init", str(path)]) == 0

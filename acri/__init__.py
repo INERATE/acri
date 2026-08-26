@@ -19,6 +19,7 @@ from .compass import resolve as _compass_resolve
 from .corpus import Corpus, Tool, index
 from .ledger import Entry, Ledger
 from .port import GenerationResult, cached_call, gemini, openai_compatible
+from .router import route
 
 __all__ = [
     "Tool", "Corpus", "index", "from_callables", "from_mcp_tools",
@@ -44,17 +45,20 @@ def run(
     *,
     k: int = 5,
     model: str | None = None,
+    cheap_model: str | None = None,
     ledger: Ledger | None = None,
     cache: dict[Any, GenerationResult] | None = None,
 ) -> GenerationResult:
     """Resolve tools for `query`, call `provider` with them, log the trace if a ledger is given.
 
-    Pass a dict as `cache` to skip a repeated (provider, model, query, offered tools) call
-    -- see port.cached_call and docs/decisions.md #8c.
+    `cache` (a dict) skips a repeated (provider, model, query, offered tools) call -- see
+    port.cached_call, decisions.md #8c. `cheap_model` routes this one call to a cheaper
+    tier -- see router.route, decisions.md #1.
     """
     call = _PROVIDERS.get(provider)
     if call is None:
         raise ValueError(f"unknown provider: {provider!r} (expected one of {sorted(_PROVIDERS)})")
+    model = route(model, cheap_model)
     start = time.time()
     resolved = _compass_resolve(query, corpus, k)
     key = (provider, model, query, tuple(r.tool.name for r in resolved))

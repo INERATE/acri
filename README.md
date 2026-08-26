@@ -45,7 +45,8 @@ acri
 ├── corpus    the capability index — MCP servers, OpenAPI, plain functions,
 │             indexed into one searchable body
 ├── compass   the resolver — intent in, the right k tools out           ← the core
-├── port      provider adapters — gemini · openai-compatible · anthropic · local
+├── router    the tier picker — cheap/strong model, chosen once, before generating
+├── port      provider adapters — gemini · openai-compatible (OpenAI, vLLM, Ollama, ...)
 ├── gate      the necessity check — does this turn need a tool at all?  (advisory)
 ├── press     the compactor — big payloads to short digests + a handle
 ├── ledger    the decision trace — what was chosen, skipped, and what it cost
@@ -54,9 +55,9 @@ acri
 
 ## Status
 
-**Pre-alpha. `corpus` + `compass` + `port` + a minimal `ledger` exist and are tested.
-The first `assay/` numbers below are real and reproducible; the accuracy claim itself
-still needs a live model run.**
+**Pre-alpha — API not yet stable (v0.x, see `docs/decisions.md`). `corpus` + `compass` +
+`port` + `ledger` + `assay` + an exact-match cache + a pre-generation router all exist,
+are tested, and back every claim below with a script or a test file.**
 
 ```bash
 pip install acri
@@ -182,7 +183,7 @@ that measured it. If a future version adds `studio` (the real trace visualizer �
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
 | **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected twice after the benchmark itself was found to be flawed, both times in public. |
-| **v0.3** | Pre-generation router, exact-match cache | **Cache shipped.** `acri.run(..., cache={})` skips a repeated (provider, model, query, offered tools) call — [`acri/port.py`](acri/port.py)'s `cached_call`, tests in [`tests/test_ports.py`](tests/test_ports.py) and [`tests/test_integration.py`](tests/test_integration.py). Router not started. |
+| **v0.3** | Pre-generation router, exact-match cache | **Shipped.** Cache: `acri.run(..., cache={})` skips a repeated (provider, model, query, offered tools) call — [`acri/port.py`](acri/port.py)'s `cached_call`. Router: `acri.run(..., cheap_model=...)` routes one call to a cheaper tier, once, before generating — [`acri/router.py`](acri/router.py). Eligibility (is this call stateless and prefix-free?) is the caller's judgment, not acri's — see `docs/architecture.md` §4.4. Tests: [`tests/test_ports.py`](tests/test_ports.py), [`tests/test_router.py`](tests/test_router.py), [`tests/test_integration.py`](tests/test_integration.py). |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 
 ## The claims policy

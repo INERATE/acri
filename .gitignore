@@ -10,8 +10,20 @@ __pycache__/
 dist/
 *.egg-info/
 
-# node
+# rust
+target/
+rust/target/
+**/*.rs.bk
+**/.rustc_info.json
+**/.cargo-artifact-lock
+**/.cargo-build-lock
+**/.cargo-lock
+**/CACHEDIR.TAG
+
+# node & typescript
 node_modules/
+typescript/node_modules/
+typescript/dist/
 *.tsbuildinfo
 
 # local indexes & traces (never committed)

@@ -1,0 +1,8 @@
+[package]
+name = "acri-core"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal Rust port of acri's core resolver (corpus + compass) -- see README.md in this directory"
+license = "MIT"
+
+[dependencies]

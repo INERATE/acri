@@ -55,7 +55,8 @@ acri
 ## Status
 
 **Pre-alpha. `corpus` + `compass` + `port` + a minimal `ledger` exist and are tested.
-No number in this README is claimed yet — that needs `assay`, which does not exist.**
+The first `assay/` numbers below are real and reproducible; the accuracy claim itself
+still needs a live model run.**
 
 ```bash
 pip install acri
@@ -80,12 +81,41 @@ builds on, and the claims it explicitly refuses to make. Read
 [`docs/decisions.md`](docs/decisions.md) for every capability that was proposed and cut,
 with the evidence that decided it.
 
+### First numbers
+
+Measured on a synthetic 100-tool corpus spanning 20 domains (github, postgres, stripe,
+aws_ec2, jira, zendesk, ...) with realistic cross-domain confusability, and 50 hand-written
+queries phrased the way someone would actually type them, not as paraphrases of the tool
+descriptions. Reproduce: `pip install -e ".[dev]"` then `python -m assay.recall`. Fixtures
+and script: [`assay/fixtures.json`](assay/fixtures.json), [`assay/recall.py`](assay/recall.py).
+
+| k | recall@k | tools shown instead of 100 |
+|---|----------|-----------------------------|
+| 1 | 64% — [`assay/recall.py`](assay/recall.py) | 1 |
+| 3 | 74% — [`assay/recall.py`](assay/recall.py) | 3 |
+| 5 | 86% — [`assay/recall.py`](assay/recall.py) | 5 |
+| 10 | 88% — [`assay/recall.py`](assay/recall.py) | 10 |
+
+Both adversarial queries (no correct tool exists in the corpus) correctly resolve to
+nothing, at every k.
+
+This is recall, not the accuracy claim itself — it says the right tool is *available* to
+the model in a much smaller set, not that the model picks it. That needs a live model:
+[`assay/accuracy.py`](assay/accuracy.py) is built (naive vs. acri, both arms real API
+calls) but not yet run — it costs money and isn't part of CI. Run it yourself:
+`OPENAI_API_KEY=... python -m assay.accuracy --provider openai`.
+
+`compass.resolve()` itself, over 1,040 calls against the same 100-tool corpus: p50 0.040ms,
+p95 0.087ms ([`assay/latency.py`](assay/latency.py)). Not headlined on purpose — see
+[`docs/decisions.md`](docs/decisions.md) for why resolver latency is beside the point
+against a network call measured in hundreds of milliseconds.
+
 ### Roadmap
 
 | Version | Scope | Gate to ship |
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
-| **v0.2** | `assay` | Every claim in this README reproducible from `assay/` |
+| **v0.2** | `assay` | Recall + latency **shipped, numbers above.** Accuracy harness built, awaiting a live run. |
 | **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 

@@ -1,15 +1,10 @@
 """corpus — the capability index. Ingests tools into one searchable body, once."""
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
-_TOKEN_RE = re.compile(r"[a-z0-9]+")
-
-
-def _tokenize(text: str) -> list[str]:
-    return _TOKEN_RE.findall(text.lower())
+from ._text import tokenize as _tokenize
 
 
 @dataclass(frozen=True)

@@ -228,8 +228,12 @@ Recorded here so nobody has to relitigate them later:
   outputs solved that years ago.
 
 The one claim acri intends to earn is **tool-selection accuracy on large toolsets for
-providers without native tool search**, measured against a three-arm baseline: naive,
-cache-enabled, and acri.
+providers without native tool search**, measured against a two-arm baseline: naive
+(every tool shown) and acri (only the resolved k shown). An earlier draft of this
+document specified a third "cache-enabled" arm; that was wrong and has been removed —
+prompt caching changes what a call costs, not which tools the model sees, so it cannot
+change which tool gets picked. It was a cost question wearing an accuracy question's
+clothes. See [`assay/accuracy.py`](../assay/accuracy.py).
 
 ## 8. Open questions
 

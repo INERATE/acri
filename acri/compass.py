@@ -11,7 +11,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .corpus import Corpus, Tool, _tokenize
+from ._text import tokenize as _tokenize
+from .corpus import Corpus, Tool
 
 _K1 = 1.5
 _B = 0.75

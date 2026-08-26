@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="100%" height="100%"
+  style="background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',Helvetica,sans-serif">
+  <defs>
+    <filter id="cs" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+    <filter id="csA" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#2563eb" flood-opacity="0.14"/>
+    </filter>
+    <filter id="csG" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#059669" flood-opacity="0.12"/>
+    </filter>
+    <linearGradient id="blueTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="greenTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="amberTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="purpleTop" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="headerBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .edge { stroke-dasharray:6,6; animation:flow 1.8s linear infinite; }
+    @keyframes flow { to{ stroke-dashoffset:-12; } }
+    .hub-pulse { animation:hpulse 2.8s ease-in-out infinite alternate; }
+    @keyframes hpulse {
+      from { filter: drop-shadow(0 0 0px rgba(37,99,235,0.0)); }
+      to   { filter: drop-shadow(0 0 16px rgba(37,99,235,0.22)); }
+    }
+    .lbl { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
+    .mono { font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+    .t1 { font-size:13px; font-weight:700; fill:#0f172a; }
+    .t2 { font-size:11px; fill:#64748b; }
+    .t3 { font-size:11px; fill:#475569; }
+  </style>
+
+  <!-- Background + top accent -->
+  <rect width="1200" height="700" fill="#f8fafc"/>
+  <rect width="1200" height="3" fill="url(#blueTop)" rx="2"/>
+
+  <!-- Window chrome -->
+  <rect x="24" y="12" width="1152" height="676" rx="14" fill="#ffffff" filter="url(#cs)"/>
+  <rect x="24" y="12" width="1152" height="44" rx="14" fill="url(#headerBar)"/>
+  <rect x="24" y="40" width="1152" height="16" fill="url(#headerBar)"/>
+  <line x1="24" y1="56" x2="1176" y2="56" stroke="#e2e8f0" stroke-width="1"/>
+  <!-- Traffic lights -->
+  <circle cx="50" cy="34" r="6" fill="#ff5f56"/>
+  <circle cx="70" cy="34" r="6" fill="#ffbd2e"/>
+  <circle cx="90" cy="34" r="6" fill="#27c93f"/>
+  <!-- Title -->
+  <text x="116" y="39" fill="#0f172a" font-size="14" font-weight="700">ACRI Studio — Live Agent Mesh &amp; Capability Topology</text>
+  <!-- Badges -->
+  <rect x="940" y="22" width="104" height="22" rx="11" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <circle cx="955" cy="33" r="4" fill="#10b981"/>
+  <text x="966" y="37" fill="#059669" font-size="11" font-weight="600">Active: 6 Nodes</text>
+  <rect x="1054" y="22" width="118" height="22" rx="11" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1113" y="37" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="700" class="mono">⚡ 0.038ms</text>
+
+  <!-- ═══ EDGE CONNECTIONS (all dashed, animate) ════ -->
+  <!-- Hub → LLMs -->
+  <line x1="455" y1="315" x2="370" y2="210" stroke="#f59e0b" stroke-width="1.5" class="edge" opacity="0.7"/>
+  <line x1="455" y1="330" x2="370" y2="330" stroke="#2563eb" stroke-width="2" class="edge"/>
+  <line x1="455" y1="345" x2="370" y2="450" stroke="#7c3aed" stroke-width="1.5" class="edge" opacity="0.7"/>
+  <!-- Hub → MCPs -->
+  <line x1="715" y1="315" x2="800" y2="210" stroke="#059669" stroke-width="2" class="edge"/>
+  <line x1="715" y1="330" x2="800" y2="330" stroke="#059669" stroke-width="2" class="edge"/>
+  <line x1="715" y1="345" x2="800" y2="450" stroke="#059669" stroke-width="1.5" class="edge" opacity="0.7"/>
+  <!-- Hub → Child Agent -->
+  <line x1="585" y1="510" x2="585" y2="578" stroke="#2563eb" stroke-width="1.5" class="edge"/>
+
+  <!-- ═══ CENTER HUB ════════════════════════════════ -->
+  <g transform="translate(455,245)" class="hub-pulse">
+    <rect width="260" height="170" rx="14" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#csA)"/>
+    <rect x="0" y="0" width="260" height="4" rx="2" fill="url(#blueTop)"/>
+    <g transform="translate(18,18)">
+      <rect width="90" height="20" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text x="45" y="14" text-anchor="middle" fill="#2563eb" font-size="10" font-weight="700" letter-spacing="0.5px">PARENT HUB</text>
+      <text y="40" fill="#0f172a" font-size="15" font-weight="800">acri.compass</text>
+      <text y="56" class="t2">Capability Resolution Engine</text>
+      <rect y="68" width="224" height="38" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="12" y="84" fill="#2563eb" font-size="11" font-weight="700">BM25 Intent Discriminator</text>
+      <text x="12" y="98" fill="#94a3b8" font-size="10" class="mono">⚡ 38 µs — zero-lock</text>
+      <!-- quota bar -->
+      <rect y="118" width="224" height="5" rx="3" fill="#e2e8f0"/>
+      <rect y="118" width="80" height="5" rx="3" fill="url(#blueTop)"/>
+      <text y="134" class="t2">Token quota: 80 / 4000</text>
+    </g>
+  </g>
+
+  <!-- ═══ LEFT: MODEL PROVIDERS ════════════════════ -->
+  <!-- DeepSeek -->
+  <g transform="translate(140,160)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#fde68a" stroke-width="1.5" filter="url(#cs)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#amberTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">DeepSeek V3 / R1</text>
+      <text y="18" fill="#d97706" font-size="11" font-weight="600">Tier: Trivial · $0.005/1K</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#fffbeb" stroke="#fde68a"/>
+      <text x="10" y="45" fill="#92400e" font-size="11">● Active — Instant Triage</text>
+    </g>
+  </g>
+
+  <!-- Gemini Flash -->
+  <g transform="translate(140,295)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#bfdbfe" stroke-width="2" filter="url(#csA)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#blueTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">Gemini 2.5 Flash</text>
+      <text y="18" fill="#2563eb" font-size="11" font-weight="600">Tier: Tool Caller · $0.01/1K</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="10" y="45" fill="#059669" font-size="11" font-weight="700">● Active — 56% Accuracy 🏆</text>
+    </g>
+  </g>
+
+  <!-- Claude -->
+  <g transform="translate(140,430)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#cs)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#purpleTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">Claude 3.5 Sonnet</text>
+      <text y="18" fill="#7c3aed" font-size="11" font-weight="600">Tier: Deep Synthesis</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="10" y="45" fill="#94a3b8" font-size="11">○ Idle — Zero-Token Sleep</text>
+    </g>
+  </g>
+
+  <!-- ═══ RIGHT: MCP TOOL SERVERS ════════════════ -->
+  <!-- GitHub -->
+  <g transform="translate(830,160)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5" filter="url(#csG)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#greenTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">GitHub MCP Server</text>
+      <text y="18" class="t2">14 tools indexed · stdio</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="10" y="45" fill="#059669" font-size="11">● Ready — PR &amp; Issues API</text>
+    </g>
+  </g>
+
+  <!-- PostgreSQL -->
+  <g transform="translate(830,295)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5" filter="url(#cs)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#greenTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">PostgreSQL MCP</text>
+      <text y="18" class="t2">8 tools indexed · Read-Only</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="10" y="45" fill="#059669" font-size="11">● Sandboxed — Safe Mode</text>
+    </g>
+  </g>
+
+  <!-- Filesystem -->
+  <g transform="translate(830,430)">
+    <rect width="230" height="96" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5" filter="url(#cs)"/>
+    <rect x="0" y="0" width="230" height="3" rx="2" fill="url(#greenTop)"/>
+    <g transform="translate(16,14)">
+      <text class="t1">Filesystem MCP</text>
+      <text y="18" class="t2">14 tools indexed · Live</text>
+      <rect y="30" width="198" height="22" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="10" y="45" fill="#059669" font-size="11">● Verified — stdio pipe</text>
+    </g>
+  </g>
+
+  <!-- ═══ BOTTOM: CHILD AGENT ═════════════════════ -->
+  <g transform="translate(455,578)">
+    <rect width="260" height="90" rx="12" fill="#ffffff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#cs)"/>
+    <rect x="0" y="0" width="260" height="3" rx="2" fill="url(#purpleTop)"/>
+    <g transform="translate(18,14)">
+      <text class="t1">Child Agent Instance</text>
+      <text y="18" fill="#7c3aed" font-size="11">request_capability() syscall</text>
+      <rect y="30" width="224" height="22" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="10" y="45" fill="#475569" font-size="11" class="mono">Artifact Emitter · quota 120/4000</text>
+    </g>
+  </g>
+
+  <!-- ═══ FOOTER ══════════════════════════════════ -->
+  <rect x="24" y="656" width="1152" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="44" y="677" fill="#64748b" font-size="11">
+    <tspan fill="#0f172a" font-weight="700">Active Topology:</tspan>
+    <tspan>  6 nodes  ·  3 LLM providers  ·  3 MCP servers  ·  1 child agent  ·  </tspan>
+    <tspan fill="#2563eb" font-weight="700">BM25 resolution 0.038 ms</tspan>
+    <tspan>  ·  </tspan>
+    <tspan fill="#059669" font-weight="700">56% selection accuracy</tspan>
+  </text>
+</svg>

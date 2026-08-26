@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 680" width="100%" height="100%"
+  style="background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter',Helvetica,sans-serif">
+  <defs>
+    <filter id="as" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+    <filter id="asA" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#2563eb" flood-opacity="0.13"/>
+    </filter>
+    <filter id="asG" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#059669" flood-opacity="0.11"/>
+    </filter>
+    <linearGradient id="ablue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="agreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/><stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="ahdr" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+  </defs>
+  <style>
+    .flow { stroke-dasharray:6,6; animation:aflo 1.8s linear infinite; }
+    @keyframes aflo { to { stroke-dashoffset:-12; } }
+    .lbl { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
+    .mono { font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+    .t1 { font-size:13px; font-weight:700; fill:#0f172a; }
+    .t2 { font-size:11px; fill:#64748b; }
+    .t3 { font-size:11px; fill:#475569; }
+  </style>
+
+  <!-- Background -->
+  <rect width="1200" height="680" fill="#f8fafc"/>
+  <rect width="1200" height="3" fill="url(#ablue)" rx="2"/>
+
+  <!-- Window chrome -->
+  <rect x="24" y="12" width="1152" height="656" rx="14" fill="#ffffff" filter="url(#as)"/>
+  <rect x="24" y="12" width="1152" height="44" rx="14" fill="url(#ahdr)"/>
+  <rect x="24" y="40" width="1152" height="16" fill="url(#ahdr)"/>
+  <line x1="24" y1="56" x2="1176" y2="56" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="50" cy="34" r="6" fill="#ff5f56"/>
+  <circle cx="70" cy="34" r="6" fill="#ffbd2e"/>
+  <circle cx="90" cy="34" r="6" fill="#27c93f"/>
+  <text x="116" y="39" fill="#0f172a" font-size="14" font-weight="700">ACRI Multi-Platform Artifact Delivery &amp; Native Execution</text>
+  <rect x="1024" y="22" width="120" height="22" rx="11" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="1084" y="37" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="700">Unified Standard</text>
+
+  <!-- ═══ CENTER: ARTIFACT EMITTER ═════════════════════ -->
+  <g transform="translate(450,76)">
+    <rect width="300" height="100" rx="14" fill="#ffffff" stroke="#2563eb" stroke-width="2" filter="url(#asA)"/>
+    <rect x="0" y="0" width="300" height="3" rx="2" fill="url(#ablue)"/>
+    <g transform="translate(18,16)">
+      <text fill="#2563eb" class="lbl">Artifact Engine</text>
+      <text y="22" class="t1" font-size="14">ACRI Artifact Emitter</text>
+      <text y="38" class="t2">Structured Payload Specification</text>
+      <rect y="50" width="264" height="26" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="10" y="67" fill="#475569" font-size="11" class="mono">{"type": "interactive_ui", ...}</text>
+    </g>
+  </g>
+
+  <!-- Flow arrows: emitter → left pane, emitter → right pane -->
+  <path d="M 450,126 L 325,126 L 325,220" fill="none" stroke="#2563eb" stroke-width="2" class="flow"/>
+  <path d="M 750,126 L 875,126 L 875,220" fill="none" stroke="#059669" stroke-width="2" class="flow"/>
+
+  <!-- ═══ LEFT PANE: WEB CHATBOT ════════════════════════ -->
+  <g transform="translate(44,220)">
+    <rect width="540" height="392" rx="14" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5" filter="url(#asA)"/>
+    <rect x="0" y="0" width="540" height="3" rx="2" fill="url(#ablue)"/>
+
+    <!-- Mini browser chrome -->
+    <rect x="0" y="3" width="540" height="38" rx="0" fill="#f8fafc"/>
+    <circle cx="22" cy="22" r="5" fill="#ff5f56"/>
+    <circle cx="38" cy="22" r="5" fill="#ffbd2e"/>
+    <circle cx="54" cy="22" r="5" fill="#27c93f"/>
+    <rect x="72" y="10" width="310" height="22" rx="6" fill="#ffffff" stroke="#e2e8f0"/>
+    <text x="227" y="25" text-anchor="middle" fill="#94a3b8" font-size="10" class="mono">https://app.acri.dev/workspace</text>
+    <line x1="0" y1="41" x2="540" y2="41" stroke="#e2e8f0"/>
+
+    <!-- Pane label -->
+    <text x="20" y="62" fill="#2563eb" font-size="10" font-weight="700" letter-spacing="0.6px" text-transform="uppercase">WEB CHAT / BROWSER ARTIFACT</text>
+
+    <!-- User bubble -->
+    <rect x="20" y="72" width="310" height="34" rx="16" fill="#2563eb"/>
+    <text x="36" y="93" fill="#ffffff" font-size="12">"Create a customer feedback intake form"</text>
+
+    <!-- Interactive Card injected into chat -->
+    <g transform="translate(20,118)">
+      <rect width="500" height="236" rx="12" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.5" filter="url(#as)"/>
+      <rect x="0" y="0" width="500" height="3" rx="2" fill="url(#ablue)"/>
+
+      <!-- Card header -->
+      <g transform="translate(18,16)">
+        <text class="t1">⚡ Customer Feedback Form</text>
+        <rect x="340" y="-6" width="102" height="20" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+        <text x="391" y="8" text-anchor="middle" fill="#059669" font-size="10" font-weight="700">LIVE ARTIFACT</text>
+        <text y="20" class="t2">Dynamically mounted from ACRI structured payload</text>
+      </g>
+
+      <!-- Form fields row 1 -->
+      <g transform="translate(18,60)">
+        <rect width="222" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="14" y="21" fill="#94a3b8" font-size="11">Your Name…</text>
+        <rect x="234" width="248" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="248" y="21" fill="#94a3b8" font-size="11">Email address…</text>
+      </g>
+
+      <!-- Textarea -->
+      <g transform="translate(18,102)">
+        <rect width="464" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="14" y="26" fill="#94a3b8" font-size="11">Describe your feedback or issue…</text>
+      </g>
+
+      <!-- Dropzone -->
+      <g transform="translate(18,160)">
+        <rect width="464" height="36" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-dasharray="4,4"/>
+        <text x="232" y="23" text-anchor="middle" fill="#2563eb" font-size="11">📁 Drag &amp; drop attachments or log files</text>
+      </g>
+
+      <!-- Submit button -->
+      <rect x="376" y="206" width="104" height="30" rx="8" fill="url(#ablue)"/>
+      <text x="428" y="225" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Submit →</text>
+    </g>
+  </g>
+
+  <!-- ═══ RIGHT PANE: DESKTOP NATIVE SANDBOX ════════════ -->
+  <g transform="translate(616,220)">
+    <rect width="540" height="392" rx="14" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5" filter="url(#asG)"/>
+    <rect x="0" y="0" width="540" height="3" rx="2" fill="url(#agreen)"/>
+
+    <!-- Mini window chrome -->
+    <rect x="0" y="3" width="540" height="38" rx="0" fill="#f8fafc"/>
+    <circle cx="22" cy="22" r="5" fill="#ff5f56"/>
+    <circle cx="38" cy="22" r="5" fill="#ffbd2e"/>
+    <circle cx="54" cy="22" r="5" fill="#27c93f"/>
+    <text x="80" y="26" fill="#059669" font-size="11" font-weight="700">macOS / Linux — Native Agent Sandbox</text>
+    <line x1="0" y1="41" x2="540" y2="41" stroke="#e2e8f0"/>
+
+    <!-- Label -->
+    <text x="20" y="62" fill="#059669" font-size="10" font-weight="700" letter-spacing="0.6px">DESKTOP OS NATIVE EXECUTION</text>
+
+    <!-- Dialog 1: Execution command -->
+    <g transform="translate(20,74)">
+      <rect width="500" height="100" rx="10" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#as)"/>
+      <rect x="0" y="0" width="500" height="3" rx="2" fill="#94a3b8"/>
+      <g transform="translate(16,16)">
+        <text class="t1" font-size="12">Native System Execution Dialog</text>
+        <text y="18" class="t2">Agent triggered an isolated host-level tool:</text>
+        <rect y="30" width="468" height="32" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="12" y="50" fill="#059669" font-size="11" class="mono">$ acri exec --sandbox docker:postgres "OPTIMIZE TABLE"</text>
+      </g>
+    </g>
+
+    <!-- Dialog 2: Sandbox isolation details -->
+    <g transform="translate(20,192)">
+      <rect width="500" height="168" rx="10" fill="#ffffff" stroke="#bbf7d0" stroke-width="1.5" filter="url(#asG)"/>
+      <rect x="0" y="0" width="500" height="3" rx="2" fill="url(#agreen)"/>
+      <g transform="translate(16,16)">
+        <text class="t1" font-size="12" fill="#059669">✓ Isolated Micro-Container Sandbox</text>
+        <rect y="24" width="468" height="24" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+        <text x="12" y="40" fill="#475569" font-size="11">Linux Namespace: <tspan class="mono" font-weight="600">cgroup_agent_instance_42</tspan></text>
+        <rect y="54" width="468" height="24" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="12" y="70" fill="#475569" font-size="11">Resource: 256MB RAM · 10% CPU · $0.05 token budget</text>
+        <rect y="84" width="468" height="24" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+        <text x="12" y="100" fill="#475569" font-size="11">Security: Host filesystem protected · Read-only mode</text>
+        <rect y="118" width="468" height="24" rx="6" fill="#eff6ff" stroke="#bfdbfe"/>
+        <text x="12" y="134" fill="#2563eb" font-size="11" font-weight="700" class="mono">💤 Zero-Token Sleep — agent idle until next event</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ═══ FOOTER ══════════════════════════════════════════ -->
+  <rect x="24" y="640" width="1152" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+  <text x="44" y="661" fill="#64748b" font-size="11">
+    <tspan fill="#0f172a" font-weight="700">Delivery Modes:</tspan>
+    <tspan>  Web Chat (React card)  ·  Browser Extension (overlay)  ·  Desktop Native (stdio sandbox)  ·  CI/CD (headless)  ·  </tspan>
+    <tspan fill="#2563eb" font-weight="700">One unified artifact spec</tspan>
+  </text>
+</svg>

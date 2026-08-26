@@ -1,0 +1,307 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="100%" height="100%"
+  style="background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Inter','Segoe UI',Helvetica,sans-serif">
+  <defs>
+    <!-- Subtle card shadows via filter -->
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07"/>
+    </filter>
+    <filter id="cardShadowActive" x="-6%" y="-6%" width="112%" height="112%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#2563eb" flood-opacity="0.18"/>
+    </filter>
+    <filter id="pillShadow" x="-10%" y="-20%" width="120%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.1"/>
+    </filter>
+
+    <!-- Accent gradients -->
+    <linearGradient id="blueAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="greenAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="topBarGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    /* === Frame cycle: 6 frames × 2.8s = 16.8s loop === */
+    @keyframes f1in  { 0%,100%{opacity:0} 2%,16%{opacity:1} 17.5%,99%{opacity:0} }
+    @keyframes f2in  { 0%,16.5%{opacity:0} 18%,32%{opacity:1} 33.5%,100%{opacity:0} }
+    @keyframes f3in  { 0%,33%{opacity:0} 34.5%,48%{opacity:1} 49.5%,100%{opacity:0} }
+    @keyframes f4in  { 0%,49%{opacity:0} 50.5%,64%{opacity:1} 65.5%,100%{opacity:0} }
+    @keyframes f5in  { 0%,65%{opacity:0} 66.5%,80%{opacity:1} 81.5%,100%{opacity:0} }
+    @keyframes f6in  { 0%,81%{opacity:0} 82.5%,97%{opacity:1} 99%,100%{opacity:0} }
+
+    .f1 { animation: f1in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+    .f2 { animation: f2in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+    .f3 { animation: f3in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+    .f4 { animation: f4in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+    .f5 { animation: f5in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+    .f6 { animation: f6in 16.8s cubic-bezier(0.4,0,0.2,1) infinite; }
+
+    @keyframes progress { 0%{width:0} 100%{width:874px} }
+    .prog { animation: progress 16.8s linear infinite; }
+
+    @keyframes blink { 0%,100%{opacity:0.4} 50%{opacity:1} }
+    .blink { animation: blink 1.2s ease-in-out infinite; }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    .lbl { font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; }
+    .mono { font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace; }
+  </style>
+
+  <!-- ═══════════════════════════════════════════ CHROME WINDOW ═══ -->
+  <!-- Outer card -->
+  <rect x="8" y="8" width="944" height="544" rx="16" fill="#ffffff" filter="url(#cardShadow)"/>
+  <!-- Top bar -->
+  <rect x="8" y="8" width="944" height="44" rx="16" fill="url(#topBarGrad)"/>
+  <rect x="8" y="36" width="944" height="16" fill="url(#topBarGrad)"/>
+  <!-- Separator -->
+  <line x1="8" y1="52" x2="952" y2="52" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Traffic lights -->
+  <circle cx="32" cy="30" r="6" fill="#ff5f56"/>
+  <circle cx="52" cy="30" r="6" fill="#ffbd2e"/>
+  <circle cx="72" cy="30" r="6" fill="#27c93f"/>
+
+  <!-- URL bar -->
+  <rect x="96" y="18" width="480" height="24" rx="6" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="336" y="34" text-anchor="middle" fill="#64748b" font-size="11" class="mono">acri.dev — Execution Lifecycle</text>
+
+  <!-- Right badge -->
+  <rect x="820" y="18" width="120" height="24" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="880" y="34" text-anchor="middle" fill="#2563eb" font-size="11" font-weight="700" class="mono">⚡ 0.038ms</text>
+
+  <!-- ═══ CONTENT AREA ═══════════════════════════════════════════ -->
+  <!-- Left pane bg -->
+  <rect x="8" y="52" width="472" height="484" fill="#ffffff"/>
+  <!-- Right pane bg -->
+  <rect x="480" y="52" width="472" height="484" fill="#f8fafc"/>
+  <!-- Divider -->
+  <line x1="480" y1="52" x2="480" y2="536" stroke="#e2e8f0" stroke-width="1"/>
+
+  <!-- Pane headers -->
+  <text x="32" y="80" fill="#94a3b8" font-size="10" font-weight="700" letter-spacing="0.8px" text-transform="uppercase">USER &amp; CLIENT VIEW</text>
+  <text x="500" y="80" fill="#94a3b8" font-size="10" font-weight="700" letter-spacing="0.8px">ACRI RUNTIME ENGINE</text>
+
+  <!-- Persistent user bubble (always visible) -->
+  <g transform="translate(28,94)">
+    <rect width="290" height="46" rx="12" fill="#2563eb" filter="url(#pillShadow)"/>
+    <text x="16" y="20" fill="#ffffff" font-size="12" font-weight="500">"Merge PR #42 on GitHub and</text>
+    <text x="16" y="36" fill="#ffffff" font-size="12" font-weight="500">dispatch confirmation to Zendesk."</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 1 ═════════════════════ -->
+  <g class="f1">
+    <!-- Left: typing indicator -->
+    <g transform="translate(28,156)">
+      <rect width="120" height="28" rx="14" fill="#f1f5f9" stroke="#e2e8f0" stroke-width="1"/>
+      <circle cx="28" cy="14" r="4" fill="#94a3b8" class="blink"/>
+      <circle cx="46" cy="14" r="4" fill="#94a3b8"/>
+      <circle cx="64" cy="14" r="4" fill="#94a3b8"/>
+    </g>
+
+    <!-- Right: Stage card -->
+    <g transform="translate(500,94)">
+      <rect width="432" height="130" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#cardShadow)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="#e2e8f0"/>
+      <text x="20" y="30" fill="#94a3b8" class="lbl">Stage 1 of 6 · Query Ingestion</text>
+      <text x="20" y="58" fill="#0f172a" font-size="15" font-weight="700">Prompt Received</text>
+      <text x="20" y="78" fill="#64748b" font-size="12">14 inbound tokens · Corpus: 500+ tools loaded</text>
+      <rect x="20" y="94" width="392" height="24" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="32" y="110" fill="#475569" font-size="11" class="mono">acri.corpus: idle · listening in-memory</text>
+    </g>
+
+    <!-- Step label -->
+    <text x="32" y="530" fill="#94a3b8" font-size="11">Step 1 / 6 — User issues multi-step task across GitHub and Zendesk</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 2 ═════════════════════ -->
+  <g class="f2">
+    <!-- Left: resolved tag -->
+    <g transform="translate(28,156)">
+      <rect width="260" height="28" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text x="14" y="19" fill="#2563eb" font-size="11" font-weight="700">⚡ Resolved 3 of 500 tools in 0.038 ms</text>
+    </g>
+
+    <!-- Right: BM25 result card -->
+    <g transform="translate(500,94)">
+      <rect width="432" height="178" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="1.5" filter="url(#cardShadowActive)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="url(#blueAccent)"/>
+      <text x="20" y="28" fill="#2563eb" class="lbl">Stage 2 · compass.resolve() — 38 µs</text>
+
+      <text x="20" y="54" fill="#0f172a" font-size="15" font-weight="700">Top Matched Schemas</text>
+
+      <rect x="20" y="66" width="392" height="28" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+      <text x="32" y="84" fill="#15803d" font-size="12" font-weight="600" class="mono">1.  github.merge_pr       score 0.98</text>
+
+      <rect x="20" y="100" width="392" height="28" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="32" y="118" fill="#475569" font-size="12" class="mono">2.  zendesk.send_reply    score 0.91</text>
+
+      <rect x="20" y="134" width="392" height="28" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="32" y="152" fill="#475569" font-size="12" class="mono">3.  ledger.log_action     score 0.85</text>
+
+      <text x="20" y="170" fill="#94a3b8" font-size="11">497 irrelevant tools pruned · context bloat cut 95%</text>
+    </g>
+
+    <text x="32" y="530" fill="#2563eb" font-size="11" font-weight="600">Step 2 / 6 — BM25 discriminator isolates exact 3 tools in 38 microseconds</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 3 ═════════════════════ -->
+  <g class="f3">
+    <g transform="translate(28,156)">
+      <rect width="310" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <circle cx="20" cy="16" r="5" fill="#94a3b8" class="blink"/>
+      <text x="36" y="21" fill="#64748b" font-size="12">Connecting to Gemini 2.5 Flash…</text>
+    </g>
+
+    <g transform="translate(500,94)">
+      <rect width="432" height="148" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#cardShadow)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="#7c3aed"/>
+      <text x="20" y="28" fill="#7c3aed" class="lbl">Stage 3 · Prefix-Stable Schema Injection</text>
+
+      <text x="20" y="54" fill="#0f172a" font-size="15" font-weight="700">KV-Cache Preserved</text>
+
+      <rect x="20" y="66" width="392" height="26" rx="6" fill="#faf5ff" stroke="#e9d5ff"/>
+      <text x="32" y="83" fill="#6d28d9" font-size="11" class="mono">Provider: Google AI Studio / Vertex AI</text>
+
+      <rect x="20" y="98" width="392" height="26" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="32" y="115" fill="#15803d" font-size="11" font-weight="700">✓ Cache discount active · $0.075/MTok (90% off)</text>
+
+      <text x="20" y="142" fill="#94a3b8" font-size="11">Prefix hash identical across turns — cache never busted</text>
+    </g>
+
+    <text x="32" y="530" fill="#7c3aed" font-size="11" font-weight="600">Step 3 / 6 — Stable prefix keeps provider KV-cache hot across every turn</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 4 ═════════════════════ -->
+  <g class="f4">
+    <g transform="translate(28,156)">
+      <rect width="310" height="32" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="16" y="21" fill="#475569" font-size="12">Executing merge on branch <tspan font-weight="700" class="mono">main</tspan>…</text>
+    </g>
+
+    <g transform="translate(500,94)">
+      <rect width="432" height="168" rx="12" fill="#ffffff" stroke="#059669" stroke-width="1.5" filter="url(#cardShadowActive)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="url(#greenAccent)"/>
+      <text x="20" y="28" fill="#059669" class="lbl">Stage 4 · Structured Tool Invocation</text>
+
+      <rect x="20" y="36" width="392" height="30" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="32" y="56" fill="#15803d" font-size="13" font-weight="700" class="mono">github.merge_pr(pr_id=42)</text>
+
+      <!-- Accuracy comparison -->
+      <text x="20" y="92" fill="#0f172a" font-size="13" font-weight="700">Selection Accuracy</text>
+
+      <rect x="20" y="100" width="172" height="44" rx="8" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="106" y="118" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">WITH ACRI</text>
+      <text x="106" y="136" text-anchor="middle" fill="#059669" font-size="18" font-weight="800">56%</text>
+
+      <rect x="200" y="100" width="212" height="44" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="306" y="118" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">NAIVE (100 TOOLS)</text>
+      <text x="306" y="136" text-anchor="middle" fill="#cbd5e1" font-size="18" font-weight="800">20%</text>
+
+      <text x="20" y="162" fill="#94a3b8" font-size="11">2.5× accuracy gain · zero latency overhead verified</text>
+    </g>
+
+    <text x="32" y="530" fill="#059669" font-size="11" font-weight="600">Step 4 / 6 — Filtered schema set doubles tool selection accuracy to 56%</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 5 ═════════════════════ -->
+  <g class="f5">
+    <g transform="translate(28,156)">
+      <rect width="260" height="28" rx="6" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="14" y="19" fill="#059669" font-size="11" font-weight="700">✓ PR #42 merged · Compacting response…</text>
+    </g>
+
+    <g transform="translate(500,94)">
+      <rect width="432" height="152" rx="12" fill="#ffffff" stroke="#f59e0b" stroke-width="1.5" filter="url(#cardShadow)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="#f59e0b"/>
+      <text x="20" y="28" fill="#b45309" class="lbl">Stage 5 · acri.press — Payload Compaction</text>
+
+      <text x="20" y="54" fill="#0f172a" font-size="15" font-weight="700">12 KB → 180 Bytes</text>
+
+      <rect x="20" y="66" width="188" height="52" rx="8" fill="#fffbeb" stroke="#fde68a"/>
+      <text x="114" y="86" text-anchor="middle" fill="#92400e" font-size="10" font-weight="700">RAW PAYLOAD</text>
+      <text x="114" y="108" text-anchor="middle" fill="#92400e" font-size="16" font-weight="800">12,480 B</text>
+
+      <text x="224" y="97" text-anchor="middle" fill="#94a3b8" font-size="20" font-weight="300">→</text>
+
+      <rect x="240" y="66" width="172" height="52" rx="8" fill="#f0fdf4" stroke="#bbf7d0"/>
+      <text x="326" y="86" text-anchor="middle" fill="#15803d" font-size="10" font-weight="700">COMPACTED</text>
+      <text x="326" y="108" text-anchor="middle" fill="#15803d" font-size="16" font-weight="800">180 B</text>
+
+      <text x="20" y="142" fill="#94a3b8" font-size="11">98.6% size reduction · OpenTelemetry span emitted to ledger</text>
+    </g>
+
+    <text x="32" y="530" fill="#b45309" font-size="11" font-weight="600">Step 5 / 6 — 12KB raw payload compacted to 180 bytes before context re-entry</text>
+  </g>
+
+  <!-- ═════════════════════ FRAME 6 ═════════════════════ -->
+  <g class="f6">
+    <!-- Left: Artifact card -->
+    <g transform="translate(28,156)">
+      <rect width="424" height="166" rx="12" fill="#ffffff" stroke="#2563eb" stroke-width="1.5" filter="url(#cardShadowActive)"/>
+      <rect x="0" y="0" width="424" height="4" rx="2" fill="url(#blueAccent)"/>
+
+      <!-- Card header -->
+      <text x="16" y="26" fill="#0f172a" font-size="13" font-weight="700">⚡ Zendesk Confirmation Dispatcher</text>
+      <rect x="304" y="12" width="96" height="18" rx="5" fill="#ecfdf5" stroke="#6ee7b7"/>
+      <text x="352" y="25" text-anchor="middle" fill="#059669" font-size="9" font-weight="800">LIVE ARTIFACT</text>
+
+      <!-- Form fields -->
+      <rect x="16" y="38" width="392" height="28" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="28" y="56" fill="#94a3b8" font-size="11">Ticket #1084 — Bugfix Deployed</text>
+
+      <rect x="16" y="72" width="392" height="28" rx="6" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="28" y="90" fill="#94a3b8" font-size="11">PR #42 is live. Your issue is resolved!</text>
+
+      <!-- Send button -->
+      <rect x="320" y="108" width="88" height="32" rx="8" fill="url(#blueAccent)"/>
+      <text x="364" y="128" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="700">Send →</text>
+    </g>
+
+    <!-- Right: Summary -->
+    <g transform="translate(500,94)">
+      <rect width="432" height="168" rx="12" fill="#ffffff" stroke="#059669" stroke-width="1.5" filter="url(#cardShadowActive)"/>
+      <rect x="0" y="0" width="432" height="4" rx="2" fill="url(#greenAccent)"/>
+      <text x="20" y="28" fill="#059669" class="lbl">Stage 6 · Execution Complete</text>
+
+      <text x="20" y="56" fill="#0f172a" font-size="15" font-weight="700">Turn Finished</text>
+
+      <rect x="20" y="66" width="188" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="114" y="84" text-anchor="middle" fill="#94a3b8" font-size="10">TOTAL LATENCY</text>
+      <text x="114" y="104" text-anchor="middle" fill="#0f172a" font-size="16" font-weight="800">1.65 s</text>
+
+      <rect x="220" y="66" width="192" height="48" rx="8" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="316" y="84" text-anchor="middle" fill="#94a3b8" font-size="10">TOTAL COST</text>
+      <text x="316" y="104" text-anchor="middle" fill="#059669" font-size="16" font-weight="800">$0.00032</text>
+
+      <text x="20" y="136" fill="#475569" font-size="11">Interactive artifact mounted · Agent entering Zero-Token Sleep</text>
+      <text x="20" y="154" fill="#94a3b8" font-size="11" class="mono">💤 acri.compass: sleeping until next event</text>
+    </g>
+
+    <text x="32" y="530" fill="#059669" font-size="11" font-weight="600">Step 6 / 6 — Interactive UI artifact mounted · Agent enters Zero-Token Sleep mode</text>
+  </g>
+
+  <!-- ═══ PROGRESS BAR ════════════════════════════════════════════ -->
+  <rect x="8" y="536" width="944" height="16" rx="8" fill="#f1f5f9"/>
+  <rect x="8" y="536" width="0" height="16" rx="8" fill="url(#progressGrad)" class="prog"/>
+
+  <!-- Step dots -->
+  <g transform="translate(8,540)">
+    <circle cx="157" cy="4" r="3" fill="#e2e8f0"/>
+    <circle cx="314" cy="4" r="3" fill="#e2e8f0"/>
+    <circle cx="471" cy="4" r="3" fill="#e2e8f0"/>
+    <circle cx="628" cy="4" r="3" fill="#e2e8f0"/>
+    <circle cx="785" cy="4" r="3" fill="#e2e8f0"/>
+  </g>
+</svg>

@@ -69,12 +69,15 @@ typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only
 are tested, and back every claim below with a script or a test file. `daemon` (`acri up`)
 exists too, ahead of its own gate — see the v1.0 roadmap row for what that means.**
 
-Not yet published to PyPI — [`.github/workflows/publish.yml`](.github/workflows/publish.yml) exists but
-hasn't been triggered (needs a trusted publisher registered on PyPI's side, then a GitHub Release). The
-distribution name will be `pyacri`, not `acri` — PyPI blocks names within edit-distance-1 of an existing
-package (`acris`, `acr`, and `acre` already exist, all unrelated); `import acri` and the `acri` command
-are unaffected, since PyPI's distribution name and the Python import name are separate settings. Until
-published, install from a clone:
+```bash
+pip install pyacri
+```
+
+Distribution name is `pyacri`, not `acri` — PyPI blocks names within edit-distance-1 of an existing
+package (`acris`, `acr`, and `acre` already exist, all unrelated). `import acri` and the `acri` command
+are unaffected, since PyPI's distribution name and the Python import name are separate settings.
+Published via [`.github/workflows/publish.yml`](.github/workflows/publish.yml) (OIDC trusted publishing,
+triggered by the `v0.4.0` GitHub Release). To install extras or work on acri itself, clone and:
 
 ```bash
 pip install -e ".[dev]"

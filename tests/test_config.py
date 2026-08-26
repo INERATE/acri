@@ -1,6 +1,7 @@
 import pytest
 
-from acri.config import Config, McpEntry, from_yaml, missing_env_vars
+from acri.config import Config, McpEntry, from_yaml
+from acri.credentials import missing_env_vars
 
 
 def _write(tmp_path, text):
@@ -55,6 +56,22 @@ def test_from_yaml_rejects_an_mcp_entry_with_neither_command_nor_url(tmp_path):
 
 def test_from_yaml_rejects_an_mcp_entry_with_both_command_and_url(tmp_path):
     text = 'version: 1\nmcp:\n  - name: broken\n    command: ["x"]\n    url: http://localhost:1\n'
+    with pytest.raises(ValueError):
+        from_yaml(_write(tmp_path, text))
+
+
+def test_from_yaml_parses_a_sandboxed_mcp_entry(tmp_path):
+    text = ('version: 1\nmcp:\n  - name: untrusted\n    command: ["npx", "-y", "some-server"]\n'
+            '    sandbox:\n      image: node:20-slim\n      network: false\n')
+    config = from_yaml(_write(tmp_path, text))
+    sandbox = config.mcp[0].sandbox
+    assert sandbox.image == "node:20-slim"
+    assert sandbox.network is False
+    assert sandbox.memory == "256m"  # unset fields keep SandboxConfig's own defaults
+
+
+def test_from_yaml_rejects_sandbox_on_a_url_entry(tmp_path):
+    text = 'version: 1\nmcp:\n  - name: broken\n    url: http://localhost:1\n    sandbox:\n      image: x\n'
     with pytest.raises(ValueError):
         from_yaml(_write(tmp_path, text))
 

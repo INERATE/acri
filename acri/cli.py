@@ -45,7 +45,8 @@ def _init(args: argparse.Namespace) -> int:
 
 def _check(args: argparse.Namespace) -> int:
     try:
-        from .config import from_yaml, missing_env_vars  # lazy: needs acri[yaml]
+        from .config import from_yaml  # lazy: needs acri[yaml]
+        from .credentials import missing_env_vars
     except ImportError:
         print("acri check needs PyYAML -- pip install acri[yaml]", file=sys.stderr)
         return 1

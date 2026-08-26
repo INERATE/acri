@@ -16,7 +16,8 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
-from .config import Config, from_yaml, missing_env_vars, provider_for
+from .config import Config, from_yaml
+from .credentials import missing_env_vars, provider_for
 from .corpus import index
 from .daemon import RedactingLedger, default_ledger, handle_chat_completion
 from .mcp_connect import connect_all
@@ -45,7 +46,7 @@ def _make_handler(config: Config, corpus: Any, client: Any, provider: str, ledge
                     request, corpus, client, provider,
                     k=config.k, cheap_model=config.models.cheap, ledger=ledger,
                 )
-            except Exception as exc:  # noqa: BLE001 -- one bad request must not take the process down
+            except Exception as exc:  # one bad request shouldn't kill the process
                 self.send_error(500, str(exc))
                 return
             self.send_response(200)
@@ -56,7 +57,7 @@ def _make_handler(config: Config, corpus: Any, client: Any, provider: str, ledge
             self.wfile.write(f"data: {json.dumps(chunk)}\n\n".encode())
             self.wfile.write(b"data: [DONE]\n\n")
 
-        def log_message(self, fmt: str, *args: Any) -> None:  # never log message bodies -- decisions.md
+        def log_message(self, fmt: str, *args: Any) -> None:  # no message bodies logged
             pass
 
     return Handler

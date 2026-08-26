@@ -7,14 +7,12 @@ needs it -- the core library stays dependency-free.
 """
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-_ENV_VARS = {"gemini": "GEMINI_API_KEY", "openai": "OPENAI_API_KEY"}
 _SUPPORTED_VERSION = 1
 
 
@@ -25,10 +23,19 @@ class ModelsConfig:
 
 
 @dataclass(frozen=True)
+class SandboxConfig:  # v1.1 resource/network limits -- see acri.sandbox.sandboxed()
+    image: str
+    memory: str = "256m"
+    cpus: float = 0.5
+    network: bool = True
+
+
+@dataclass(frozen=True)
 class McpEntry:
     name: str
     command: list[str] | None = None
     url: str | None = None
+    sandbox: SandboxConfig | None = None  # command: entries only -- see _mcp_entry
 
 
 @dataclass(frozen=True)
@@ -53,7 +60,11 @@ def _mcp_entry(raw: dict[str, Any]) -> McpEntry:
     command, url = raw.get("command"), raw.get("url")
     if bool(command) == bool(url):
         raise ValueError(f"mcp entry {raw.get('name')!r} needs exactly one of command or url")
-    return McpEntry(name=raw["name"], command=command, url=url)
+    sandbox = raw.get("sandbox")
+    if sandbox and not command:
+        raise ValueError(f"mcp entry {raw.get('name')!r}: sandbox needs command, not url")
+    return McpEntry(name=raw["name"], command=command, url=url,
+                     sandbox=SandboxConfig(**sandbox) if sandbox else None)
 
 
 def from_yaml(path: str | Path) -> Config:
@@ -73,16 +84,3 @@ def from_yaml(path: str | Path) -> Config:
         k=resolve.get("k", 5),
         limits=Limits(timeout_ms=limits.get("timeout_ms"), max_cost_per_task_usd=limits.get("max_cost_per_task_usd")),
     )
-
-
-def provider_for(model: str) -> str:
-    return "gemini" if "gemini" in model.lower() else "openai"
-
-
-def missing_env_vars(config: Config) -> list[str]:
-    """Standard env vars (GEMINI_API_KEY, OPENAI_API_KEY) any configured model needs,
-    that aren't set. Inferred from the model name, not a `provider:` field -- the
-    documented acri.yaml example doesn't have one."""
-    models = [m for m in (config.models.default, config.models.cheap) if m]
-    needed = {_ENV_VARS[provider_for(m)] for m in models}
-    return sorted(v for v in needed if not os.environ.get(v))

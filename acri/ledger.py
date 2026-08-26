@@ -24,6 +24,7 @@ class Entry:
     selected: list[str]
     latency_ms: float
     cost_usd: float | None = None
+    corpus_size: int | None = None  # tools available, not just offered -- studio's reduction % needs both
     timestamp: float = field(default_factory=time.time)
 
 
@@ -41,6 +42,7 @@ class Ledger:
         selected: list[str],
         latency_ms: float,
         cost_usd: float | None = None,
+        corpus_size: int | None = None,
     ) -> Entry:
         entry = Entry(
             query=query,
@@ -48,6 +50,7 @@ class Ledger:
             selected=selected,
             latency_ms=latency_ms,
             cost_usd=cost_usd,
+            corpus_size=corpus_size,
         )
         self.entries.append(entry)
         if self._path:

@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>acri studio</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font: 14px/1.4 -apple-system, Segoe UI, sans-serif; background: #0f1115; color: #d8dee9; }
+  header { padding: 12px 20px; border-bottom: 1px solid #2a2e37; display: flex; align-items: center; gap: 16px; }
+  header h1 { font-size: 15px; margin: 0; font-weight: 600; color: #9fb4ff; }
+  header .hint { font-size: 12px; color: #6b7280; }
+  nav { display: flex; gap: 4px; padding: 10px 20px; }
+  nav button { background: none; border: 1px solid #2a2e37; color: #9aa4b2; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  nav button.active { background: #1c2230; color: #d8dee9; border-color: #3a4256; }
+  section { padding: 0 20px 30px; display: none; }
+  section.active { display: block; }
+  .empty { color: #6b7280; padding: 30px 0; }
+  #graph { height: 360px; }
+  .node-label { fill: #d8dee9; font-size: 11px; }
+  .server-node { fill: #2b3550; stroke: #4a5b8c; }
+  .tool-node { fill: #1c2230; stroke: #3a4256; }
+  .edge { stroke: #3a4256; stroke-width: 1; }
+  table { border-collapse: collapse; font-size: 12px; min-width: 600px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #1c2230; }
+  th { color: #6b7280; font-weight: 500; }
+  .pill { background: #1c2230; border-radius: 10px; padding: 1px 8px; margin-right: 4px; display: inline-block; font-size: 11px; }
+  .reduction { color: #7ee787; }
+</style>
+</head>
+<body>
+<header>
+  <h1>acri studio</h1>
+  <span class="hint">read-only -- acri.yaml + .acri/ledger.jsonl, polled every 2s</span>
+</header>
+<nav>
+  <button id="tab-topology" class="active">topology</button>
+  <button id="tab-live">live trace</button>
+</nav>
+<section id="panel-topology" class="active">
+  <div id="models" class="hint" style="margin-bottom:10px"></div>
+  <svg id="graph" width="900" height="360"></svg>
+  <div id="topology-empty" class="empty" style="display:none">No tools seen yet -- run a query with a ledger attached, then reload.</div>
+</section>
+<section id="panel-live" style="overflow-x:auto">
+  <table>
+    <thead><tr><th>time</th><th>query</th><th>offered</th><th>selected</th><th>latency</th><th>reduction</th></tr></thead>
+    <tbody id="live-body"></tbody>
+  </table>
+  <div id="live-empty" class="empty" style="display:none">No ledger entries yet.</div>
+</section>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; }
+
+document.getElementById("tab-topology").onclick = () => showTab("topology");
+document.getElementById("tab-live").onclick = () => showTab("live");
+function showTab(name) {
+  for (const t of ["topology", "live"]) {
+    document.getElementById("tab-" + t).classList.toggle("active", t === name);
+    document.getElementById("panel-" + t).classList.toggle("active", t === name);
+  }
+}
+
+async function loadTopology() {
+  const data = await (await fetch("/api/topology")).json();
+  document.getElementById("models").textContent =
+    `default: ${data.models.default || "(none)"}  |  cheap: ${data.models.cheap || "(none)"}  |  servers: ${data.servers.length}`;
+  const svg = document.getElementById("graph");
+  svg.innerHTML = "";
+  document.getElementById("topology-empty").style.display = data.servers.length === 0 ? "block" : "none";
+  const byServer = {};
+  for (const t of data.tools) (byServer[t.server || "(unmatched)"] ??= []).push(t);
+  const names = data.servers.length ? data.servers.map(s => s.name) : Object.keys(byServer);
+  const w = svg.clientWidth || 900, cx = w / 2, cy = 80, r = Math.min(220, w / 2 - 60);
+  names.forEach((name, i) => {
+    const angle = (i / Math.max(names.length, 1)) * 2 * Math.PI;
+    const sx = cx + r * Math.cos(angle), sy = cy + 60 + r * Math.sin(angle) * 0.5;
+    const tools = byServer[name] || [];
+    tools.forEach((t, j) => {
+      const ta = angle + (j - (tools.length - 1) / 2) * 0.18;
+      const tx = sx + 70 * Math.cos(ta), ty = sy + 70 * Math.sin(ta) + 40;
+      svg.appendChild(el("line", { class: "edge", x1: sx, y1: sy, x2: tx, y2: ty }));
+      svg.appendChild(el("circle", { class: "tool-node", cx: tx, cy: ty, r: 4 }));
+      const label = el("text", { class: "node-label", x: tx + 6, y: ty + 3 });
+      label.textContent = t.name + (t.seen > 1 ? ` (${t.seen})` : "");
+      svg.appendChild(label);
+    });
+    svg.appendChild(el("circle", { class: "server-node", cx: sx, cy: sy, r: 16 }));
+    const label = el("text", { class: "node-label", x: sx - name.length * 3, y: sy - 22 });
+    label.textContent = name;
+    svg.appendChild(label);
+  });
+}
+
+async function loadLive() {
+  const entries = await (await fetch("/api/ledger")).json();
+  document.getElementById("live-empty").style.display = entries.length === 0 ? "block" : "none";
+  document.getElementById("live-body").innerHTML = entries.map(e => {
+    const reduction = e.corpus_size ? `${Math.round((1 - e.offered.length / e.corpus_size) * 100)}%` : "-";
+    const pills = (list) => list.map(n => `<span class="pill">${n}</span>`).join("");
+    return `<tr><td>${new Date(e.timestamp * 1000).toLocaleTimeString()}</td><td>${e.query}</td>` +
+      `<td>${pills(e.offered)}</td><td>${pills(e.selected)}</td>` +
+      `<td>${e.latency_ms.toFixed(1)}ms</td><td class="reduction">${reduction}</td></tr>`;
+  }).join("");
+}
+
+loadTopology();
+loadLive();
+setInterval(loadLive, 2000);
+</script>
+</body>
+</html>

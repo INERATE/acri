@@ -30,6 +30,11 @@ yaml = ["PyYAML>=6"]
 # `acri up` -- connects to acri.yaml's mcp: entries. Bring your own provider
 # SDK (openai and/or google-genai) matching whatever `models:` you configure.
 server = ["PyYAML>=6", "mcp>=1"]
+# `acri studio` -- decisions.md named this extra explicitly ("a separate
+# optional install"). Same PyYAML need as yaml/server today; kept as its own
+# name because decisions.md's boundary is "the core never imports it", and a
+# reader typing `pip install acri[studio]` should get exactly that promise.
+studio = ["PyYAML>=6"]
 release = ["build>=1", "twine>=5"]
 
 [project.scripts]

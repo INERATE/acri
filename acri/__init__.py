@@ -69,5 +69,5 @@ def run(
     result = cached_call(call, cache, key, client, query, offered, **kwargs)
     if ledger is not None:
         selected = [c["name"] for c in result.tool_calls]
-        ledger.record(query, resolved, selected, (time.time() - start) * 1000)
+        ledger.record(query, resolved, selected, (time.time() - start) * 1000, corpus_size=len(corpus))
     return result

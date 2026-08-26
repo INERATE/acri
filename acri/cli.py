@@ -1,7 +1,7 @@
 """cli — `acri init` writes a template acri.yaml; `acri check` validates one;
-`acri up` runs the daemon (acri/server.py) -- built ahead of decisions.md's own
-gate ("after the library has users who want it") at the maintainer's explicit
-request; see that commit message, not this one, for the override itself.
+`acri up` runs the daemon; `acri studio` runs the read-only dashboard. Both
+ship ahead of decisions.md's own gates, at the maintainer's request -- see
+acri/server.py and acri/studio.py for specifics.
 """
 from __future__ import annotations
 
@@ -9,28 +9,7 @@ import argparse
 import sys
 from pathlib import Path
 
-TEMPLATE = """\
-version: 1
-
-models:
-  default: gemini-2.5-flash
-  # cheap: a stateless, prefix-free tier only -- classification, extraction,
-  # summarizing a tool result. See docs/architecture.md #4.4. Optional.
-  # cheap: gemini-2.5-flash-lite
-
-mcp:
-  # - name: github
-  #   command: ["npx", "-y", "@modelcontextprotocol/server-github"]
-  # - name: postgres
-  #   url: http://localhost:3001
-
-resolve:
-  k: 5
-
-limits:
-  timeout_ms: 5000
-  max_cost_per_task_usd: 0.05
-"""
+from ._template import TEMPLATE
 
 
 def _init(args: argparse.Namespace) -> int:
@@ -74,6 +53,16 @@ def _up(args: argparse.Namespace) -> int:
     return 0
 
 
+def _studio(args: argparse.Namespace) -> int:
+    try:
+        from .studio import serve_studio  # lazy: needs acri[yaml]
+    except ImportError:
+        print("acri studio needs PyYAML -- pip install acri[studio]", file=sys.stderr)
+        return 1
+    serve_studio(args.path, ledger_path=args.ledger, host=args.host, port=args.port)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="acri")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -92,6 +81,13 @@ def main(argv: list[str] | None = None) -> int:
     p_up.add_argument("--port", type=int, default=8080)
     p_up.add_argument("--log-conversations", action="store_true")
     p_up.set_defaults(func=_up)
+
+    p_studio = sub.add_parser("studio", help="run the read-only dashboard over acri.yaml and the ledger")
+    p_studio.add_argument("path", nargs="?", default="acri.yaml")
+    p_studio.add_argument("--ledger", default=".acri/ledger.jsonl")
+    p_studio.add_argument("--host", default="127.0.0.1")
+    p_studio.add_argument("--port", type=int, default=8099)
+    p_studio.set_defaults(func=_studio)
 
     args = parser.parse_args(argv)
     return args.func(args)

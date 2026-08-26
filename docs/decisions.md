@@ -339,6 +339,12 @@ Two corrections to the proposal:
   Spans mean Jaeger, Grafana Tempo, and Honeycomb work at no cost, and `studio` becomes one
   consumer among several rather than the only way to see anything.
 
+**Built 2026-08-26.** `acri/studio.py` + `acri/studio_data.py` — see `architecture.md` §4.5
+for exactly which parts of this proposal shipped as designed and which are honestly
+thinner (the ledger schema below its full description here; the static mesh shows tools
+*seen* in ledger history, not a live-queried catalog of everything a server declares).
+The OpenTelemetry migration two paragraphs up is still not done.
+
 The boundary to hold: **`studio` may only display what `ledger` would record anyway for
 debugging.** When the visualizer wants a new field, the test is "would this belong in a bug
 report?" If not, it is not emitted. Otherwise the observability layer starts dictating the

@@ -48,9 +48,14 @@ it — shipping that pass-through is how we prove our semantics match a real imp
 | **`press`** | The compactor. Large tool payloads become a short digest plus a handle to the full result. |
 | **`ledger`** | The decision trace. What was chosen, what was skipped, what it cost. The receipts. |
 | **`assay`** | The proving ground. The only place in this project a benchmark number may originate. |
+| **`studio`** | The trace visualizer. Two views: the static mesh (servers, models, tools ever seen) and the live trace (recent ledger entries, polled). Reads only, never a live participant — see §4.5. |
 
-`corpus` + `compass` + `port` is v0.1 and is a complete product on its own. The rest are
-built only if `ledger` data shows they are needed.
+`corpus` + `compass` + `port` is v0.1 and is a complete product on its own. The rest were
+meant to be built only if `ledger` data showed they were needed — in practice, `gate`,
+`press`, `sandbox`, `daemon`, and `studio` all shipped ahead of that gate, each at the
+maintainer's explicit request and each stated as an override where it happened (see the
+README's roadmap table). The gate stays the right default; it was deliberately overridden
+in the open, not quietly dropped.
 
 ## 4. Three design decisions, and why
 
@@ -133,6 +138,41 @@ The surviving rule:
   extraction, summarizing a tool result. There the cheap model competes honestly.
 - On failure, **re-run the original unmodified prompt** on the strong model so its cache
   still hits. Never continue from the failed attempt.
+
+### 4.5 Studio reads two files, never connects to anything
+
+`docs/decisions.md` already accepted `studio`, with a boundary: "the first proposed
+addition that cannot make the core wrong, because it only ever reads." Built this
+session, consistent with that boundary and its two named views — the static mesh and
+the live trace, exactly the split the maintainer independently re-described when asking
+for it built, which is worth recording precisely *because* it means the design held up
+without needing to be re-explained. Two places the implementation is honestly thinner
+than the original proposal are recorded here rather than absorbed silently:
+
+- **The ledger is thinner than decisions.md described.** The proposal named "resolution
+  start, per-candidate scores, tool start and finish, model call with token counts."
+  `acri/ledger.py`'s actual `Entry` (built earlier, at v0.1 scope) has only query,
+  offered, selected, latency_ms, cost_usd, and — added alongside `studio`, since neither
+  view can show a reduction percentage without it — `corpus_size`. That one addition
+  passes decisions.md's own test ("would this belong in a bug report?"); no per-candidate
+  scores, tool-execution timing, or token counts exist yet. `studio` shows exactly what's
+  in the ledger, nothing invented. Expanding `ledger.py`'s schema further is separate,
+  future work.
+- **The static mesh shows tools *seen*, not tools *declared*.** Enumerating a server's
+  full tool list without ever having run a query against it would mean `studio`
+  connecting to MCP servers itself — the exact thing "a separate optional install that
+  only ever reads" exists to rule out. So the mesh shows every tool name that has ever
+  appeared in a real `offered` list in the ledger, grouped by a name-prefix guess at its
+  server (`github_merge_pr` → `github`). A freshly configured server with no history yet
+  is a node with no tools, not zero information.
+
+Not built: the OpenTelemetry-spans migration decisions.md calls for ("the trace shape is
+a solved standard... `studio` becomes one consumer among several"). `ledger.jsonl` stays
+a private JSONL format; `studio` is still the only consumer. Live mode polls the ledger
+file every two seconds rather than a true filesystem watch or the local-socket
+alternative decisions.md names — simpler, zero new dependencies, and "tails the ledger"
+in effect if not in mechanism. Both are real gaps against the original proposal, tracked
+here rather than pretended away.
 
 ## 5. What this design is not
 

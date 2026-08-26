@@ -456,13 +456,48 @@ memory, higher accuracy, no hallucination. Sorted by whether they can be defende
 
 | Claim | Status |
 |---|---|
-| Improves tool-selection accuracy on large toolsets | **Measured, modestly — see README.md.** `assay/accuracy.py`, gemini-2.5-flash: naive 72%, acri 74%, a single run. Earlier runs showed naive 20-28% vs. acri 50-56% and this row called it "earned"; that was a broken-benchmark artifact (empty tool schemas, under-specified queries), corrected. Not three-arm — "cache-enabled" was cut; caching changes cost, not which tools the model sees. |
+| Improves tool-selection accuracy on large toolsets | **Measured — see README.md.** `assay/accuracy.py`, gemini-2.5-flash: naive 84%, acri 92%, a single run, after three corrected rounds (run history below). Not three-arm — "cache-enabled" was cut; caching changes cost, not which tools the model sees. |
 | Frees context-window capacity | **Earnable.** Schemas occupy the window regardless of what they cost. |
 | Works where the provider ships no native tool search | **A fact**, not a claim. Free to state. |
 | Lowers cost | **Only against a named baseline.** Against a cache-enabled baseline it is false below roughly a tenfold reduction — see the rule at the top of this file. |
 | Faster execution | **Not directly.** A resolver runs against a network call that dominates it. The defensible version is *fewer turns*: a model that picks correctly the first time does not spend a turn recovering. Second-order, and a better story. |
 | Runs 24/7 cheaply | **A daemon property**, not a resolver property — no polling, no model held warm. |
 | Better intelligence, no hallucination | **Not claimable.** A smaller choice set makes wrong choices rarer, not impossible. One counterexample destroys an absolute claim. |
+
+**Accuracy run history**, kept in full because the corrections are part of the evidence:
+
+| Run | naive | acri | What changed to get here |
+|---|---|---|---|
+| 1 (retracted) | ~24% | ~53% | Broken, see `assay/accuracy.py` commit history: all 100 tool schemas had empty `properties`; the model was correctly declining to fabricate arguments it was never given, scored as a miss. |
+| 2 | 72% | 74% | Fixed: real JSON Schema on all 100 tools, every gold query supplies a value for each *declared* `required` field. Still left a gap `assay/diagnose.py` hadn't been run against yet. |
+| 3 (current) | 84% | 92% | A `compass.py` synonym layer took recall@5 to 100% (`assay/recall.py`), then a diagnostic pass (`assay/diagnose.py`) on the resulting model misses found 9 more queries that satisfied their tool's `required` list on paper but still withheld a value the action needed in practice. Fixed per-case: |
+
+The 9, each a real gap between "technically required" and "actually needed":
+
+| Query (before) | Tool | What was missing |
+|---|---|---|
+| "is PR 42 merged into main yet" | `github_get_pull_request` | no repo — added `on the acme/webapp repo` |
+| "email the invoice PDF to billing@acme.com..." | `email_send_email` | tool has no attachment field at all — reworded to a request the tool can actually do |
+| "schedule a meeting with the design team tomorrow" | `calendar_create_event` | `start_time` not concrete — added `at 2pm` |
+| "instance i-0abc123 is too small, bump it up a size" | `aws_ec2_resize_instance` | no target type — added `to t3.large`; `new_type` also marked `required` |
+| "we need more replicas of the checkout-service deployment" | `kubernetes_scale_deployment` | no count — added `to 6 replicas`; `replicas` also marked `required` |
+| "point api.example.com at the new server" | `dns_create_record` | no address — added `, 203.0.113.42`; `value` also marked `required` |
+| "text +14155550101 their order confirmation" | `twilio_send_sms` | no message body — added `saying their order has shipped and will arrive Friday` |
+| "this photo is low-res, can we sharpen it up" | `image_gen_upscale_image` | no file at all — became `sunset.jpg is low-res...` |
+| "move the Acme Corp deal to the next sales stage" | `salesforce_update_opportunity` | no opportunity ID, no target stage — became `move opportunity opp_4471 (Acme Corp) to the Negotiation stage` |
+
+**What was deliberately left alone**, because the gold tool's `required` fields were already
+fully present and the model still declined — that's not a fixture bug, it's the model being
+cautious about a consequential action:
+
+- `"give customer cus_18x their money back"` → `stripe_refund_charge` (`customer_id` given)
+- `"spin up a new EC2 box for staging"` → `aws_ec2_launch_instance` (nothing is `required`)
+
+Both still miss in run 3. Patching them further — inventing a specific refund amount or
+instance size the query never implied — would stop being a benchmark fix and start being
+tuning toward a number. Held the line there on purpose, same as the two BM25 recall misses
+this project has never chased. If this shape (declines a write action with everything it was
+given) shows up again elsewhere, it's a finding about the model, not this fixture set.
 
 The defensible sentence:
 

@@ -17,6 +17,34 @@ from .corpus import Corpus, Tool
 _K1 = 1.5
 _B = 0.75
 
+# Query-side synonym expansion: words a user types that never literally
+# appear in any tool description -- BM25 has no stemming or semantic
+# understanding, so "rain" and "weather" are unrelated tokens to it
+# otherwise. Applied to the query only, never the corpus: expanding doc
+# text here would let a tool's description quietly start matching queries
+# for a synonym it never claimed, and would shift df/idf for every other
+# tool too. Every entry below traces to a real recall@5 miss, not a guess
+# -- see assay/diagnose.py.
+_ALIASES: dict[str, tuple[str, ...]] = {
+    "pr": ("pull", "request"),
+    "meeting": ("event",),
+    "rain": ("weather",),
+    "raining": ("weather",),
+    "storm": ("weather",),
+    "warning": ("alerts",),
+    "warnings": ("alerts",),
+    "text": ("sms", "message"),
+    "sharpen": ("upscale", "resolution"),
+    "money": ("refund", "charge"),
+}
+
+
+def _expand(tokens: list[str]) -> list[str]:
+    expanded = list(tokens)
+    for tok in tokens:
+        expanded.extend(_ALIASES.get(tok, ()))
+    return expanded
+
 
 @dataclass(frozen=True)
 class Resolved:
@@ -59,7 +87,7 @@ def resolve(query: str, corpus: Corpus, k: int = 5) -> list[Resolved]:
     """
     if len(corpus) == 0:
         return []
-    query_tokens = _tokenize(query)
+    query_tokens = _expand(_tokenize(query))
     raw = [_bm25(query_tokens, corpus, i) for i in range(len(corpus))]
     top = max(raw, default=0.0)
     if top <= 0.0:

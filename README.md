@@ -91,55 +91,65 @@ and script: [`assay/fixtures.json`](assay/fixtures.json), [`assay/recall.py`](as
 
 | k | recall@k | tools shown instead of 100 |
 |---|----------|-----------------------------|
-| 1 | 64% — [`assay/recall.py`](assay/recall.py) | 1 |
-| 3 | 74% — [`assay/recall.py`](assay/recall.py) | 3 |
-| 5 | 86% — [`assay/recall.py`](assay/recall.py) | 5 |
-| 10 | 88% — [`assay/recall.py`](assay/recall.py) | 10 |
+| 1 | 74% — [`assay/recall.py`](assay/recall.py) | 1 |
+| 3 | 90% — [`assay/recall.py`](assay/recall.py) | 3 |
+| 5 | 100% — [`assay/recall.py`](assay/recall.py) | 5 |
+| 10 | 100% — [`assay/recall.py`](assay/recall.py) | 10 |
 
 Both adversarial queries (no correct tool exists in the corpus) correctly resolve to
-nothing, at every k.
+nothing, at every k. The k=5 row moved from 86% to 100% ([`assay/recall.py`](assay/recall.py))
+after a small query-side synonym table was added to `compass.py` —
+[`_ALIASES`](acri/compass.py), 10 entries, each traced to
+a real miss, not guessed (`pr` → `pull`, `request`; `rain` → `weather`; `text` → `sms`,
+`message`; and so on). It expands the query only, never the indexed tool text, so a tool's
+own description can't start quietly matching a synonym it never claimed.
 
 Recall says the right tool is *available* to the model in a much smaller set — not that
 the model picks it. That's a separate, live-model question:
 [`assay/accuracy.py`](assay/accuracy.py), naive (all 100 tools) vs. acri (top 5), same 50
 queries, real `gemini-2.5-flash` calls, no mocking.
 
-**A corrected result, not just a new one.** Earlier runs of this benchmark (see the commit
-history on [`assay/accuracy.py`](assay/accuracy.py)) reported naive around a quarter right
-and acri around half, and this README called that "acri roughly doubles accuracy." That
-claim was wrong, and not because acri underperformed — the benchmark was broken in two
-ways that had nothing to do with tool selection. Every one of the 100 fixture tools had an
-*empty* parameter schema (no `properties` at all), and several gold queries never supplied
-values a tool would need ("run *this* SQL" with no SQL attached, "text *this* customer" with
-no phone number). A well-behaved model correctly declines to fabricate a ticket ID or a SQL
-string and asks for it instead — and that correct, cautious behavior was being scored as a
-tool-selection failure. Once both were fixed (100 tools now carry real JSON Schema
-parameters; every gold query supplies a value for each of its tool's *required* fields), the
-picture changed substantially:
+**Corrected twice, both times in public.** The first published number here claimed acri roughly doubles accuracy: naive ~24%, acri ~53% (commit history on [`assay/accuracy.py`](assay/accuracy.py)). That was a broken benchmark: every one
+of the 100 fixture tools had an *empty* parameter schema, so a well-behaved model correctly
+declined to fabricate a ticket ID or a SQL string it was never given, and that correct
+caution was scored as a tool-selection failure. Fixing the schemas and the obviously
+under-specified queries produced a second number: naive 72%, acri 74% ([`assay/accuracy.py`](assay/accuracy.py)), that this README called modest and honest. It
+was honest, but still not fully clean: a live diagnostic pass
+(`assay/diagnose.py`) surfaced 9 more queries that satisfied their tool's *declared*
+`required` fields but still left a genuinely necessary value unstated — "bump it up a size"
+with no target size, "point \[domain\] at the new server" with no address, an opportunity
+referenced by company name instead of ID. Full list and reasoning:
+[`docs/decisions.md`](docs/decisions.md). Fixed the same way as the first round — supply the
+missing value, or mark the field `required` if the action is meaningless without it — never
+by rewording toward the answer. Third run, current:
 
 | Arm | accuracy | median latency |
 |---|---|---|
-| naive (100 tools) | 72% — [`assay/accuracy.py`](assay/accuracy.py) | 1645 ms |
-| acri (top 5) | 74% — [`assay/accuracy.py`](assay/accuracy.py) | 1545 ms |
+| naive (100 tools) | 84% — [`assay/accuracy.py`](assay/accuracy.py) | 1792 ms |
+| acri (top 5) | 92% — [`assay/accuracy.py`](assay/accuracy.py) | 1596 ms |
 
-**The honest reading: at 100 tools, `gemini-2.5-flash` is already good at this, and the
-accuracy gap is small — a 2-point difference on 50 queries is within noise, not a doubling.**
-Recall still explains the residual gap precisely: 7 of the 50 queries fail for acri because
-`compass` never offers the right tool at all (real BM25 vocabulary limits — "rain" never
-lexically matches "weather," "PR" never matches "pull request"; see
-[`assay/diagnose.py`](assay/diagnose.py)), which caps acri below naive's ceiling by
-construction. Latency again shows no meaningful difference between arms — consistent across
-every run this project has done, broken-benchmark or not. This is a single run; a second
-independent pass would firm up the confidence interval and is a natural next step, not yet
-taken. Reproduce: `GEMINI_API_KEY=... python -m assay.accuracy --provider gemini`, or via
+**An 8-point gap this time, not noise** — for scale, naive's own score moved 2 points
+between the previous two runs with zero code changes on its side, so 2 points is this
+benchmark's rough noise floor at n=50; 8 is well outside it. `assay/diagnose.py` confirms
+`resolver_miss=0` — every remaining acri miss is the model's, not compass's — and all four
+share one shape: the model declines to act (`picked: None`, not a wrong tool) on a
+write/mutating request — refund a charge, launch a server, send an email, book a meeting —
+even once every *required* field is present. That reads as the model being conservative
+about consequential actions specifically, not a resolver or benchmark defect, and it is left
+unpatched on purpose: supplying more certainty than a real caller would have crosses from
+fixing the benchmark into fixing the test until it passes. This is still a single run at each
+stage; repeat runs would firm up the interval and are a natural next step, not yet taken.
+Reproduce: `GEMINI_API_KEY=... python -m assay.accuracy --provider gemini`, or via
 [Vertex AI / ADC](assay/clients.py):
 `GOOGLE_APPLICATION_CREDENTIALS=... GOOGLE_CLOUD_PROJECT=... python -m assay.accuracy --provider vertex`.
 
-What this means for the project's one claim: **recall — the context-window reduction — is
-the number that survived scrutiny** (the recall@k table above, unaffected by any of the
-above, since BM25 never reads a tool's parameters). The accuracy claim is real but much
-more modest than first reported, and is likely to matter more as tool counts grow past what
-this corpus tests — a genuinely open question, not yet measured.
+What this means for the project's claims: **recall — the context-window reduction — remains
+the number that survived every round unaffected** (BM25 never reads a tool's parameters, so
+none of the query-completeness fixes could have moved it; only the synonym layer did, on
+purpose). The accuracy claim is now both real and no longer small, but it took three
+corrected rounds to get a benchmark that measures tool selection instead of measuring
+whether the fixtures gave the model enough to work with — a fact worth remembering before
+trusting the next number this project publishes, including from this project's own authors.
 
 **Also verified against a real MCP server, not a mock:**
 [`assay/mcp_live.py`](assay/mcp_live.py) spawns the official
@@ -155,12 +165,23 @@ p95 0.087ms ([`assay/latency.py`](assay/latency.py)). Not headlined on purpose �
 [`docs/decisions.md`](docs/decisions.md) for why resolver latency is beside the point
 against a network call measured in hundreds of milliseconds.
 
+### Diagrams
+
+![acri resolution flow: corpus.index once, compass.resolve per query, top 5 of 100 tools sent to port](docs/assets/resolution-flow.svg)
+
+![acri benchmark results: recall@k and naive vs acri tool-selection accuracy, both linked to their assay scripts](docs/assets/benchmark-results.svg)
+
+Both are static SVGs generated from the numbers above, nothing more — no simulator, no live
+trace, no feature these diagrams show that isn't already shipped and linked to the script
+that measured it. If a future version adds `studio` (the real trace visualizer — see
+[`docs/decisions.md`](docs/decisions.md)), it replaces these; until then, these are it.
+
 ### Roadmap
 
 | Version | Scope | Gate to ship |
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
-| **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected once after the benchmark itself was found to be flawed. |
+| **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected twice after the benchmark itself was found to be flawed, both times in public. |
 | **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 

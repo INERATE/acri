@@ -77,3 +77,17 @@ def test_gemini_parses_a_function_call():
     client = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
     result = gemini(client, "what's the weather in Tokyo", resolved)
     assert result.tool_calls == [{"name": "get_weather", "arguments": {"city": "Tokyo"}}]
+
+
+def test_gemini_handles_a_blocked_response_without_crashing():
+    resolved = _resolved_weather_tool()
+
+    def generate_content(**kwargs):
+        # A real shape: safety/recitation blocks and MAX_TOKENS-before-any-
+        # content all leave candidate.content as None.
+        return SimpleNamespace(candidates=[SimpleNamespace(content=None, finish_reason="SAFETY")])
+
+    client = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
+    result = gemini(client, "what's the weather in Tokyo", resolved)
+    assert result.text is None
+    assert result.tool_calls == []

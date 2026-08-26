@@ -102,28 +102,44 @@ nothing, at every k.
 Recall says the right tool is *available* to the model in a much smaller set — not that
 the model picks it. That's a separate, live-model question:
 [`assay/accuracy.py`](assay/accuracy.py), naive (all 100 tools) vs. acri (top 5), same 50
-queries, real `gemini-2.5-flash` calls, no mocking. Three independent runs, two auth paths:
+queries, real `gemini-2.5-flash` calls, no mocking.
 
-| Run | auth | naive accuracy | acri accuracy | naive median latency | acri median latency |
-|---|---|---|---|---|---|
-| 1 | API key | 20% — [`assay/accuracy.py`](assay/accuracy.py) | 54% — [`assay/accuracy.py`](assay/accuracy.py) | 1688 ms | 1656 ms |
-| 2 | API key | 24% — [`assay/accuracy.py`](assay/accuracy.py) | 50% — [`assay/accuracy.py`](assay/accuracy.py) | 1665 ms | 1659 ms |
-| 3 | Vertex AI / ADC | 28% — [`assay/accuracy.py`](assay/accuracy.py) | 56% — [`assay/accuracy.py`](assay/accuracy.py) | 1279 ms | 1246 ms |
+**A corrected result, not just a new one.** Earlier runs of this benchmark (see the commit
+history on [`assay/accuracy.py`](assay/accuracy.py)) reported naive around a quarter right
+and acri around half, and this README called that "acri roughly doubles accuracy." That
+claim was wrong, and not because acri underperformed — the benchmark was broken in two
+ways that had nothing to do with tool selection. Every one of the 100 fixture tools had an
+*empty* parameter schema (no `properties` at all), and several gold queries never supplied
+values a tool would need ("run *this* SQL" with no SQL attached, "text *this* customer" with
+no phone number). A well-behaved model correctly declines to fabricate a ticket ID or a SQL
+string and asks for it instead — and that correct, cautious behavior was being scored as a
+tool-selection failure. Once both were fixed (100 tools now carry real JSON Schema
+parameters; every gold query supplies a value for each of its tool's *required* fields), the
+picture changed substantially:
 
-Two things stand out, and only one of them is the headline. **acri roughly doubles
-tool-selection accuracy** on this corpus, consistent across all three runs — this is the
-claim `docs/architecture.md` set out to earn. **Latency does not move**, on either auth
-path: naive and acri are statistically indistinguishable per call (tens of ms apart against
-calls measured in seconds — noise, not signal). Reproduce:
-`GEMINI_API_KEY=... python -m assay.accuracy --provider gemini`, or with
-[Vertex AI / ADC](assay/clients.py) instead of a key:
-`GOOGLE_APPLICATION_CREDENTIALS=... GOOGLE_CLOUD_PROJECT=... python -m assay.accuracy --provider vertex`
-— `port.gemini()` is unchanged either way; only client construction differs (`assay/clients.py`).
+| Arm | accuracy | median latency |
+|---|---|---|
+| naive (100 tools) | 72% — [`assay/accuracy.py`](assay/accuracy.py) | 1645 ms |
+| acri (top 5) | 74% — [`assay/accuracy.py`](assay/accuracy.py) | 1545 ms |
 
-Naive's low score is a property of this corpus, not a weak model: the 100 tools include
-deliberately confusable cross-domain pairs (Jira vs. Zendesk both have a `close_ticket`),
-and the queries are phrased the way people actually talk, not as tool-description
-paraphrases. A harder corpus produces a bigger gap; it wasn't tuned to produce one.
+**The honest reading: at 100 tools, `gemini-2.5-flash` is already good at this, and the
+accuracy gap is small — a 2-point difference on 50 queries is within noise, not a doubling.**
+Recall still explains the residual gap precisely: 7 of the 50 queries fail for acri because
+`compass` never offers the right tool at all (real BM25 vocabulary limits — "rain" never
+lexically matches "weather," "PR" never matches "pull request"; see
+[`assay/diagnose.py`](assay/diagnose.py)), which caps acri below naive's ceiling by
+construction. Latency again shows no meaningful difference between arms — consistent across
+every run this project has done, broken-benchmark or not. This is a single run; a second
+independent pass would firm up the confidence interval and is a natural next step, not yet
+taken. Reproduce: `GEMINI_API_KEY=... python -m assay.accuracy --provider gemini`, or via
+[Vertex AI / ADC](assay/clients.py):
+`GOOGLE_APPLICATION_CREDENTIALS=... GOOGLE_CLOUD_PROJECT=... python -m assay.accuracy --provider vertex`.
+
+What this means for the project's one claim: **recall — the context-window reduction — is
+the number that survived scrutiny** (the recall@k table above, unaffected by any of the
+above, since BM25 never reads a tool's parameters). The accuracy claim is real but much
+more modest than first reported, and is likely to matter more as tool counts grow past what
+this corpus tests — a genuinely open question, not yet measured.
 
 **Also verified against a real MCP server, not a mock:**
 [`assay/mcp_live.py`](assay/mcp_live.py) spawns the official
@@ -144,7 +160,7 @@ against a network call measured in hundreds of milliseconds.
 | Version | Scope | Gate to ship |
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
-| **v0.2** | `assay` | **Shipped.** Recall, latency, and a live two-run accuracy result, all above. |
+| **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected once after the benchmark itself was found to be flawed. |
 | **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 

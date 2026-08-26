@@ -13,6 +13,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from acri.adapters import from_mcp_tools
 from acri.corpus import Tool
 
 _DATA = json.loads((Path(__file__).parent / "fixtures.json").read_text(encoding="utf-8"))
@@ -25,7 +26,10 @@ class GoldQuery:
 
 
 def load_tools() -> list[Tool]:
-    return [Tool(name=t["name"], description=t["description"]) for t in _DATA["tools"]]
+    # fixtures.json stores each tool as a real MCP tools/list entry
+    # (inputSchema included) and goes through the same adapter a live MCP
+    # server's response would -- see assay/mcp_live.py.
+    return from_mcp_tools(_DATA["tools"])
 
 
 def load_gold() -> list[GoldQuery]:

@@ -1,4 +1,24 @@
+import pytest
+
 from acri.cli import main
+
+
+def test_version_flag_reports_the_installed_pyacri_version(monkeypatch, capsys):
+    monkeypatch.setattr("acri.cli.version", lambda name: "9.9.9")
+    with pytest.raises(SystemExit):
+        main(["--version"])
+    assert capsys.readouterr().out.strip() == "acri 9.9.9"
+
+
+def test_version_flag_falls_back_to_dev_when_not_installed(monkeypatch):
+    from importlib.metadata import PackageNotFoundError
+
+    def raise_not_found(name):
+        raise PackageNotFoundError(name)
+
+    monkeypatch.setattr("acri.cli.version", raise_not_found)
+    with pytest.raises(SystemExit):
+        main(["-V"])
 
 
 def test_bare_invocation_shows_help_instead_of_erroring(capsys):

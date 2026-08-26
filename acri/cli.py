@@ -3,12 +3,21 @@ from __future__ import annotations
 
 import sys
 from argparse import ArgumentParser
+from importlib.metadata import PackageNotFoundError, version
 
 from . import _commands as cmd
 
 
+def _version() -> str:
+    try:
+        return version("pyacri")  # PyPI distribution name, not the import name
+    except PackageNotFoundError:  # e.g. running straight from a source checkout
+        return "dev"
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = ArgumentParser(prog="acri", description="A client-side capability resolver -- pick the right few tools before the request is sent.")
+    parser.add_argument("-V", "--version", action="version", version=f"acri {_version()}")
     sub = parser.add_subparsers(dest="command")
 
     p_setup = sub.add_parser("setup", help="guided acri.yaml setup: provider, one mcp server, a credential check")

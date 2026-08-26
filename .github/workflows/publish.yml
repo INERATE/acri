@@ -1,0 +1,38 @@
+name: publish
+
+# Triggered only by publishing a GitHub Release -- pushing a tag alone does
+# NOT run this. A release is a separate, deliberate action so there's always
+# a human decision point between "tag exists" and "PyPI gets a new version",
+# which cannot be undone once uploaded (only yanked, never overwritten).
+#
+# Needs, on the PyPI side, a trusted publisher registered for this repo
+# (Publishing -> Trusted Publishers on the PyPI project page): owner
+# INERATE, repo acri, workflow publish.yml, environment pypi. That's a
+# one-time setup step on pypi.org itself -- nothing here can do it, and
+# nothing here runs until it's done and a Release is published.
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install build
+      - run: python -m build
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist/ }
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # OIDC trusted publishing -- no stored token/secret
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - uses: pypa/gh-action-pypi-publish@release/v1

@@ -66,8 +66,12 @@ examples/     end-to-end scripts against a real MCP server — not part of the i
 are tested, and back every claim below with a script or a test file. `daemon` (`acri up`)
 exists too, ahead of its own gate — see the v1.0 roadmap row for what that means.**
 
+Not yet published to PyPI — [`.github/workflows/publish.yml`](.github/workflows/publish.yml) exists but
+hasn't been triggered (needs a trusted publisher registered on PyPI's side, then a GitHub Release). Until
+then, install from a clone:
+
 ```bash
-pip install acri
+pip install -e ".[dev]"
 ```
 
 ```python

@@ -11,6 +11,14 @@ license = "MIT"
 requires-python = ">=3.10"
 authors = [{ name = "Piyush Sharma" }]
 dependencies = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
+    "Typing :: Typed",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "PyYAML>=6", "mcp>=1"]
@@ -22,12 +30,15 @@ yaml = ["PyYAML>=6"]
 # `acri up` -- connects to acri.yaml's mcp: entries. Bring your own provider
 # SDK (openai and/or google-genai) matching whatever `models:` you configure.
 server = ["PyYAML>=6", "mcp>=1"]
+release = ["build>=1", "twine>=5"]
 
 [project.scripts]
 acri = "acri.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/INERATE/acri"
+Repository = "https://github.com/INERATE/acri"
+Issues = "https://github.com/INERATE/acri/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["acri"]

@@ -9,8 +9,6 @@ import argparse
 import sys
 from pathlib import Path
 
-from .config import from_yaml, missing_env_vars
-
 TEMPLATE = """\
 version: 1
 
@@ -46,6 +44,11 @@ def _init(args: argparse.Namespace) -> int:
 
 
 def _check(args: argparse.Namespace) -> int:
+    try:
+        from .config import from_yaml, missing_env_vars  # lazy: needs acri[yaml]
+    except ImportError:
+        print("acri check needs PyYAML -- pip install acri[yaml]", file=sys.stderr)
+        return 1
     path = Path(args.path)
     if not path.exists():
         print(f"{path} not found -- run `acri init` first.", file=sys.stderr)
@@ -61,8 +64,11 @@ def _check(args: argparse.Namespace) -> int:
 
 
 def _up(args: argparse.Namespace) -> int:
-    from .server import serve  # lazy: `up` needs acri[server], init/check don't
-
+    try:
+        from .server import serve  # lazy: needs acri[server]
+    except ImportError:
+        print("acri up needs mcp and PyYAML -- pip install acri[server]", file=sys.stderr)
+        return 1
     serve(args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
     return 0
 

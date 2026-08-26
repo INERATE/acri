@@ -172,9 +172,9 @@ against a network call measured in hundreds of milliseconds.
 
 ### Diagrams
 
-![acri resolution flow: corpus.index once, compass.resolve per query, top 5 of 100 tools sent to port](docs/assets/resolution-flow.svg)
+![acri resolution flow: corpus.index once, compass.resolve per query, top 5 of 100 tools sent to port](https://raw.githubusercontent.com/INERATE/acri/main/docs/assets/resolution-flow.svg)
 
-![acri benchmark results: recall@k and naive vs acri tool-selection accuracy, both linked to their assay scripts](docs/assets/benchmark-results.svg)
+![acri benchmark results: recall@k and naive vs acri tool-selection accuracy, both linked to their assay scripts](https://raw.githubusercontent.com/INERATE/acri/main/docs/assets/benchmark-results.svg)
 
 Both are static SVGs generated from the numbers above, nothing more — no simulator, no live
 trace, no feature these diagrams show that isn't already shipped and linked to the script

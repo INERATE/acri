@@ -18,7 +18,7 @@ from .compass import Resolved
 from .compass import resolve as _compass_resolve
 from .corpus import Corpus, Tool, index
 from .ledger import Entry, Ledger
-from .port import GenerationResult, gemini, openai_compatible
+from .port import GenerationResult, cached_call, gemini, openai_compatible
 
 __all__ = [
     "Tool", "Corpus", "index", "from_callables", "from_mcp_tools",
@@ -45,15 +45,21 @@ def run(
     k: int = 5,
     model: str | None = None,
     ledger: Ledger | None = None,
+    cache: dict[Any, GenerationResult] | None = None,
 ) -> GenerationResult:
-    """Resolve tools for `query`, call `provider` with them, log the trace if a ledger is given."""
+    """Resolve tools for `query`, call `provider` with them, log the trace if a ledger is given.
+
+    Pass a dict as `cache` to skip a repeated (provider, model, query, offered tools) call
+    -- see port.cached_call and docs/decisions.md #8c.
+    """
     call = _PROVIDERS.get(provider)
     if call is None:
         raise ValueError(f"unknown provider: {provider!r} (expected one of {sorted(_PROVIDERS)})")
     start = time.time()
     resolved = _compass_resolve(query, corpus, k)
+    key = (provider, model, query, tuple(r.tool.name for r in resolved))
     kwargs = {"model": model} if model else {}
-    result = call(client, query, resolved, **kwargs)
+    result = cached_call(call, cache, key, client, query, resolved, **kwargs)
     if ledger is not None:
         selected = [c["name"] for c in result.tool_calls]
         ledger.record(query, resolved, selected, (time.time() - start) * 1000)

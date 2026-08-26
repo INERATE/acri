@@ -47,6 +47,25 @@ def test_run_without_a_ledger_still_works():
     assert result.text == "ok"
 
 
+def test_run_with_a_cache_skips_a_repeated_call():
+    corpus = index([Tool(name="noop", description="does nothing")])
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="ok", tool_calls=None))])
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    cache = {}
+
+    acri.run("hello", corpus, client, provider="openai", cache=cache)
+    acri.run("hello", corpus, client, provider="openai", cache=cache)
+    assert len(calls) == 1  # second run() was an exact-match cache hit
+
+    acri.run("something else", corpus, client, provider="openai", cache=cache)
+    assert len(calls) == 2  # a different query is not the same request -- no false hit
+
+
 def test_run_rejects_an_unknown_provider():
     corpus = index([Tool(name="noop", description="does nothing")])
     with pytest.raises(ValueError):

@@ -182,7 +182,7 @@ that measured it. If a future version adds `studio` (the real trace visualizer �
 |---------|-------|--------------|
 | **v0.1** | `corpus` + `compass` + `port` + minimal `ledger` | **Shipped.** `pytest` green, no native deps. |
 | **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected twice after the benchmark itself was found to be flawed, both times in public. |
-| **v0.3** | Pre-generation router, exact-match cache | Only what `docs/decisions.md` kept |
+| **v0.3** | Pre-generation router, exact-match cache | **Cache shipped.** `acri.run(..., cache={})` skips a repeated (provider, model, query, offered tools) call — [`acri/port.py`](acri/port.py)'s `cached_call`, tests in [`tests/test_ports.py`](tests/test_ports.py) and [`tests/test_integration.py`](tests/test_integration.py). Router not started. |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
 
 ## The claims policy

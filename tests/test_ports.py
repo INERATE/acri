@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from acri.compass import resolve
 from acri.corpus import Tool, index
-from acri.port import gemini, openai_compatible
+from acri.port import cached_call, gemini, openai_compatible
 from acri.schemas import to_gemini_tools, to_openai_tools
 
 
@@ -77,6 +77,31 @@ def test_gemini_parses_a_function_call():
     client = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
     result = gemini(client, "what's the weather in Tokyo", resolved)
     assert result.tool_calls == [{"name": "get_weather", "arguments": {"city": "Tokyo"}}]
+
+
+def test_cached_call_skips_the_second_call_on_a_repeat_key():
+    calls = []
+
+    def call(x):
+        calls.append(x)
+        return f"result for {x}"
+
+    cache = {}
+    assert cached_call(call, cache, "k1", "a") == "result for a"
+    assert cached_call(call, cache, "k1", "a") == "result for a"
+    assert calls == ["a"]  # second call never reached `call`
+
+
+def test_cached_call_with_no_cache_calls_every_time():
+    calls = []
+
+    def call(x):
+        calls.append(x)
+        return x
+
+    cached_call(call, None, "k1", "a")
+    cached_call(call, None, "k1", "a")
+    assert calls == ["a", "a"]
 
 
 def test_gemini_handles_a_blocked_response_without_crashing():

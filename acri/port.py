@@ -35,6 +35,20 @@ def openai_compatible(client: Any, prompt: str, resolved: list[Resolved], model:
     return GenerationResult(text=message.content, tool_calls=calls, raw=response)
 
 
+def cached_call(call: Any, cache: dict[Any, GenerationResult] | None, key: Any, *args: Any, **kwargs: Any) -> GenerationResult:
+    """Run `call(*args, **kwargs)`, or return the prior result if `key` is already in `cache`.
+
+    docs/decisions.md #8c: exact-match only, no similarity. `cache` is a plain dict the
+    caller owns -- pass None (the default via run()) to disable it entirely.
+    """
+    if cache is not None and key in cache:
+        return cache[key]
+    result = call(*args, **kwargs)
+    if cache is not None:
+        cache[key] = result
+    return result
+
+
 def gemini(client: Any, prompt: str, resolved: list[Resolved], model: str = "gemini-2.5-flash") -> GenerationResult:
     """Call a Gemini client (the `google-genai` SDK shape)."""
     tools = to_gemini_tools(resolved)

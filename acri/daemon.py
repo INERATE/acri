@@ -26,6 +26,21 @@ def default_ledger(path: Path | str = DEFAULT_LEDGER_PATH) -> Ledger:
     return Ledger(path)
 
 
+class RedactingLedger:
+    """Wraps a real Ledger, dropping the query text before it's recorded.
+
+    docs/decisions.md: "ledger records decisions, scores, and token counts.
+    Conversation content is opt-in." -- `acri up`'s default. Duck-typed to
+    Ledger.record's signature, nothing else; `run()` never checks the type.
+    """
+
+    def __init__(self, ledger: Ledger) -> None:
+        self._ledger = ledger
+
+    def record(self, query: str, offered: Any, selected: list[str], latency_ms: float, cost_usd: float | None = None) -> Any:
+        return self._ledger.record("<redacted>", offered, selected, latency_ms, cost_usd)
+
+
 def handle_chat_completion(
     request: dict[str, Any],
     corpus: Corpus,
@@ -40,8 +55,9 @@ def handle_chat_completion(
     """Handle one OpenAI-shaped `/v1/chat/completions` request via acri.run() --
     not a reimplementation of resolve+call.
 
-    Single-turn only: the last message's content is the query. Multi-turn history
-    and actual streaming are for when this is wired into a real `acri up` process.
+    Single-turn only: the last message's content is the query. `acri/server.py`
+    wraps this in SSE at the wire level; multi-turn history and true upstream
+    streaming (vs. one blocking call chunked out) are still open.
     """
     messages = request.get("messages") or []
     query = messages[-1]["content"] if messages else ""

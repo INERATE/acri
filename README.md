@@ -48,7 +48,8 @@ acri
 ├── router    the tier picker — cheap/strong model, chosen once, before generating
 ├── port      provider adapters — gemini · openai-compatible (OpenAI, vLLM, Ollama, ...)
 ├── config    acri.yaml — declares capabilities and limits, never control flow
-├── daemon    the OpenAI-shaped handler `acri up` will serve — no socket yet
+├── daemon    the OpenAI-shaped request handler — acri.run(), nothing more
+├── server    `acri up` — binds it: stdlib http.server, SSE, localhost by default
 ├── gate      the necessity check — does this turn need a tool at all?  (advisory)
 ├── press     the compactor — big payloads to short digests + a handle
 ├── ledger    the decision trace — what was chosen, skipped, and what it cost
@@ -59,7 +60,8 @@ acri
 
 **Pre-alpha — API not yet stable (v0.x, see `docs/decisions.md`). `corpus` + `compass` +
 `port` + `ledger` + `assay` + an exact-match cache + a pre-generation router all exist,
-are tested, and back every claim below with a script or a test file.**
+are tested, and back every claim below with a script or a test file. `daemon` (`acri up`)
+exists too, ahead of its own gate — see the v1.0 roadmap row for what that means.**
 
 ```bash
 pip install acri
@@ -187,7 +189,7 @@ that measured it. If a future version adds `studio` (the real trace visualizer �
 | **v0.2** | `assay` | **Shipped.** Recall, latency, and a live accuracy result, all above — the accuracy number was corrected twice after the benchmark itself was found to be flawed, both times in public. |
 | **v0.3** | Pre-generation router, exact-match cache | **Shipped.** Cache: `acri.run(..., cache={})` skips a repeated (provider, model, query, offered tools) call — [`acri/port.py`](acri/port.py)'s `cached_call`. Router: `acri.run(..., cheap_model=...)` routes one call to a cheaper tier, once, before generating — [`acri/router.py`](acri/router.py). Eligibility (is this call stateless and prefix-free?) is the caller's judgment, not acri's — see `docs/architecture.md` §4.4. Tests: [`tests/test_ports.py`](tests/test_ports.py), [`tests/test_router.py`](tests/test_router.py), [`tests/test_integration.py`](tests/test_integration.py). |
 | **later** | `gate`, `press`, `studio` | Only if `ledger` data proves they are needed |
-| **v1.0** | `daemon` — long-lived process, OpenAI-compatible HTTP endpoint | **Gated, partially staged.** `docs/decisions.md`: "the daemon is built after the library has users who want it, not before" — not met yet, so `acri up` itself is not started. What opens no socket was built ahead of that gate: `acri.yaml` + [`acri/config.py`](acri/config.py)'s `from_yaml`, the `acri init`/`acri check` CLI ([`acri/cli.py`](acri/cli.py)), and [`acri/daemon.py`](acri/daemon.py)'s request handler — proof that the eventual daemon calls the same `acri.run()` the library does, not a reimplementation. Tests: [`tests/test_config.py`](tests/test_config.py), [`tests/test_cli.py`](tests/test_cli.py), [`tests/test_daemon.py`](tests/test_daemon.py). |
+| **v1.0** | `daemon` — long-lived process, OpenAI-compatible HTTP endpoint | **Shipped, ahead of its own gate.** `docs/decisions.md`: "the daemon is built after the library has users who want it, not before" — not met (no PyPI release yet), and built anyway at the maintainer's explicit request; that override is deliberate, not an oversight. `acri up` ([`acri/server.py`](acri/server.py), stdlib `http.server` only) connects to `acri.yaml`'s `mcp:` entries once at startup ([`acri/mcp_connect.py`](acri/mcp_connect.py)), then serves `/v1/chat/completions` over SSE via [`acri/daemon.py`](acri/daemon.py)'s handler — the same `acri.run()` the library calls, not a reimplementation. Binds `127.0.0.1` by default; conversation content is opt-in (`--log-conversations`), off by default via `RedactingLedger`. Verified against a real MCP server and a real Gemini call, not just fakes — which surfaced and fixed a real bug: Gemini's function-calling schema rejects the `$schema` key real MCP servers commonly add, invisible to every synthetic fixture in this repo (`acri/schemas.py`). Tests: [`tests/test_config.py`](tests/test_config.py), [`tests/test_cli.py`](tests/test_cli.py), [`tests/test_daemon.py`](tests/test_daemon.py), [`tests/test_server.py`](tests/test_server.py), [`tests/test_schemas.py`](tests/test_schemas.py). Wire-level SSE only — one blocking `acri.run()` call chunked out, not a true streaming upstream call. |
 
 ## The claims policy
 

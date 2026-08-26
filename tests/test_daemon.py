@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
 from acri import Ledger, Tool, index
-from acri.daemon import default_ledger, handle_chat_completion
+from acri.daemon import RedactingLedger, default_ledger, handle_chat_completion
 
 
 def _client(create_fn):
@@ -46,3 +46,14 @@ def test_default_ledger_creates_the_dot_acri_directory(tmp_path):
     ledger = default_ledger(tmp_path / "sub" / "ledger.jsonl")
     assert isinstance(ledger, Ledger)
     assert (tmp_path / "sub").is_dir()
+
+
+def test_redacting_ledger_never_writes_the_real_query(tmp_path):
+    """decisions.md: conversation content is opt-in for the daemon. The real
+    query must never reach disk through the default (redacted) path."""
+    real = Ledger(tmp_path / "ledger.jsonl")
+    redacting = RedactingLedger(real)
+    redacting.record("this is a secret question", offered=[], selected=[], latency_ms=1.0)
+    assert real.entries[0].query == "<redacted>"
+    on_disk = (tmp_path / "ledger.jsonl").read_text(encoding="utf-8")
+    assert "secret" not in on_disk

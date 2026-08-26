@@ -17,6 +17,7 @@ node_modules/
 # local indexes & traces (never committed)
 *.acri-index
 ledger/*.jsonl
+.acri/
 assay/results/
 
 # junk

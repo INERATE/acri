@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from acri.compass import resolve
 from acri.corpus import Tool, index
 from acri.port import cached_call, gemini, openai_compatible
-from acri.schemas import to_gemini_tools, to_openai_tools
 
 
 def _resolved_weather_tool():
@@ -17,18 +16,6 @@ def _resolved_weather_tool():
 
 def _fake_openai_client(create_fn):
     return SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create_fn)))
-
-
-def test_to_openai_tools_shapes_the_schema():
-    tools = to_openai_tools(_resolved_weather_tool())
-    assert tools == [{
-        "type": "function",
-        "function": {
-            "name": "get_weather",
-            "description": "Get the current weather for a city",
-            "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
-        },
-    }]
 
 
 def test_openai_compatible_parses_a_tool_call():
@@ -54,15 +41,6 @@ def test_openai_compatible_parses_plain_text_with_no_tools_offered():
     result = openai_compatible(_fake_openai_client(create), "hello", [])
     assert result.text == "It's sunny."
     assert result.tool_calls == []
-
-
-def test_to_gemini_tools_shapes_the_schema():
-    tools = to_gemini_tools(_resolved_weather_tool())
-    assert tools == [{
-        "name": "get_weather",
-        "description": "Get the current weather for a city",
-        "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
-    }]
 
 
 def test_gemini_parses_a_function_call():

@@ -1,8 +1,7 @@
-"""cli — `acri init` writes a template acri.yaml; `acri check` validates one.
-
-Both are library-side: no server, no socket. `acri up` (the actual daemon) is
-v1.0's gated remainder -- docs/decisions.md: "the daemon is built after the
-library has users who want it, not before."
+"""cli — `acri init` writes a template acri.yaml; `acri check` validates one;
+`acri up` runs the daemon (acri/server.py) -- built ahead of decisions.md's own
+gate ("after the library has users who want it") at the maintainer's explicit
+request; see that commit message, not this one, for the override itself.
 """
 from __future__ import annotations
 
@@ -61,6 +60,13 @@ def _check(args: argparse.Namespace) -> int:
     return 0
 
 
+def _up(args: argparse.Namespace) -> int:
+    from .server import serve  # lazy: `up` needs acri[server], init/check don't
+
+    serve(args.path, host=args.host, port=args.port, log_conversations=args.log_conversations)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="acri")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -72,6 +78,13 @@ def main(argv: list[str] | None = None) -> int:
     p_check = sub.add_parser("check", help="validate acri.yaml and its credentials")
     p_check.add_argument("path", nargs="?", default="acri.yaml")
     p_check.set_defaults(func=_check)
+
+    p_up = sub.add_parser("up", help="run the daemon: an OpenAI-compatible endpoint over acri.yaml's tools")
+    p_up.add_argument("path", nargs="?", default="acri.yaml")
+    p_up.add_argument("--host", default="127.0.0.1")
+    p_up.add_argument("--port", type=int, default=8080)
+    p_up.add_argument("--log-conversations", action="store_true")
+    p_up.set_defaults(func=_up)
 
     args = parser.parse_args(argv)
     return args.func(args)

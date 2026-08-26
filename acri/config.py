@@ -75,7 +75,7 @@ def from_yaml(path: str | Path) -> Config:
     )
 
 
-def _provider_for(model: str) -> str:
+def provider_for(model: str) -> str:
     return "gemini" if "gemini" in model.lower() else "openai"
 
 
@@ -84,5 +84,5 @@ def missing_env_vars(config: Config) -> list[str]:
     that aren't set. Inferred from the model name, not a `provider:` field -- the
     documented acri.yaml example doesn't have one."""
     models = [m for m in (config.models.default, config.models.cheap) if m]
-    needed = {_ENV_VARS[_provider_for(m)] for m in models}
+    needed = {_ENV_VARS[provider_for(m)] for m in models}
     return sorted(v for v in needed if not os.environ.get(v))

@@ -52,10 +52,10 @@
       words — it's choosing between more things that look alike.</p>
     <div class="wall" id="schemaWall"></div>
     <div class="accuracy-drop">
-      <span class="big dim">84%</span>
+      <span class="big dim">84%</span> <!-- assay/accuracy.py -->
       <span class="arrow">→</span>
-      <span class="big" style="color:var(--signal)">92%</span>
-      <span class="mono" style="color:var(--ink-dim); font-size:0.85rem; max-width: 22ch;">tool-selection accuracy, all 100 tools shown vs. acri's top 5 — live gemini-2.5-flash, n=50</span>
+      <span class="big" style="color:var(--signal)">92%</span> <!-- assay/accuracy.py -->
+      <span class="mono" style="color:var(--ink-dim); font-size:0.85rem; max-width: 22ch;">tool-selection accuracy, all 100 tools shown vs. acri's top 5 — live gemini-2.5-flash, n=50 (assay/accuracy.py)</span>
     </div>
   </section>
 
@@ -69,17 +69,17 @@
     <div class="balance">
       <div class="beam bad">
         <h3>Re-resolve every turn</h3>
-        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill" style="width:45%"></div></div><span>full price</span></div>
-        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill" style="width:38%"></div></div><span>full price</span></div>
-        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill" style="width:41%"></div></div><span>full price</span></div>
+        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill" style="width:45%"></div></div><span>full price</span></div><!-- illustrative -->
+        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill" style="width:38%"></div></div><span>full price</span></div><!-- illustrative -->
+        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill" style="width:41%"></div></div><span>full price</span></div><!-- illustrative -->
         <p class="verdict">Cache never hits — the prefix changes every time.</p>
       </div>
       <div class="beam good">
         <h3>Resolve once, append</h3>
-        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill signal" style="width:45%"></div></div><span>full price</span></div>
-        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div>
-        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div>
-        <p class="verdict">One full-price write, then ~10% cost after.</p>
+        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill signal" style="width:45%"></div></div><span>full price</span></div><!-- illustrative -->
+        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div><!-- illustrative -->
+        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div><!-- illustrative -->
+        <p class="verdict">One full-price write, then ~10% cost after — illustrative, from the r &lt; 1/10 argument below.</p>
       </div>
     </div>
 
@@ -120,13 +120,13 @@
       as the corpus grows; we report that rather than tune it away.</p>
     <div class="evidence-scroll">
       <table class="evidence">
+        <caption style="caption-side:bottom; text-align:left; padding-top:0.6rem; font-size:0.75rem; color:var(--ink-dim);">source: assay/recall.py (100 tools), assay/scale.py (500 tools)</caption>
         <thead><tr><th>k</th><th>recall@k, 100 tools</th><th>recall@k, 500 tools</th></tr></thead>
         <tbody>
-          <tr><td class="num">1</td><td class="num">74%</td><td class="num">60%</td></tr>
-          <tr><td class="num">3</td><td class="num">90%</td><td class="num">82%</td></tr>
-          <tr><td class="num">5</td><td class="num">100%</td><td class="num">92%</td></tr>
-          <tr><td class="num">10</td><td class="num">100%</td><td class="num">98%</td></tr>
-        </tbody>
+          <tr><td class="num">1</td><td class="num">74%</td><td class="num">60%</td></tr><!-- assay/recall.py, assay/scale.py -->
+          <tr><td class="num">3</td><td class="num">90%</td><td class="num">82%</td></tr><!-- assay/recall.py, assay/scale.py -->
+          <tr><td class="num">5</td><td class="num">100%</td><td class="num">92%</td></tr><!-- assay/recall.py, assay/scale.py -->
+          <tr><td class="num">10</td><td class="num">100%</td><td class="num">98%</td></tr><!-- assay/recall.py, assay/scale.py -->
       </table>
     </div>
     <p class="caveat">Single model (gemini-2.5-flash), one synthetic 500-tool corpus, n=50–52

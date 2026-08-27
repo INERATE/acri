@@ -3,30 +3,33 @@
   var themeIcon = document.getElementById('themeIcon');
   var themeText = document.getElementById('themeText');
 
-  function updateThemeUI(theme) {
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
     if (themeIcon && themeText) {
       if (theme === 'dark') {
         themeIcon.textContent = '🌙';
-        themeText.textContent = 'Dark';
+        themeText.textContent = 'Dark Mode';
       } else {
         themeIcon.textContent = '☀️';
-        themeText.textContent = 'Light';
+        themeText.textContent = 'Light Mode';
       }
     }
+    if (typeof readTokens === 'function') {
+      readTokens();
+    }
   }
+
+  // Default to clean Light mode on first visit
+  var saved = localStorage.getItem('acri_theme') || 'light';
+  applyTheme(saved);
 
   if (themeBtn) {
     themeBtn.addEventListener('click', function () {
       var cur = document.documentElement.getAttribute('data-theme') || 'light';
       var next = cur === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
+      applyTheme(next);
       localStorage.setItem('acri_theme', next);
-      updateThemeUI(next);
     });
-
-    var saved = localStorage.getItem('acri_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', saved);
-    updateThemeUI(saved);
   }
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

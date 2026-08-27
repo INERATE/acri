@@ -1,4 +1,4 @@
-:root {
+:root, [data-theme="light"] {
   --paper: #EDEAE0;
   --paper-2: #E2DECE;
   --line: rgba(20,18,10,0.14);
@@ -14,17 +14,17 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
 }
 
-:root:not([data-theme="light"]) {
-  @media (prefers-color-scheme: dark) {
-    --paper: #0C0D10; --paper-2: #14161B; --line: rgba(230,225,210,0.14);
-    --ink: #E6E3D8; --ink-dim: #8C8E96; --signal: #E0A552; --signal-2: #B87E33;
-    --card: #14161B; --shadow: rgba(0,0,0,0.5); --good: #7FBF8E;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0C0D10; --paper-2: #14161B; --line: rgba(230,225,210,0.14);
-  --ink: #E6E3D8; --ink-dim: #8C8E96; --signal: #E0A552; --signal-2: #B87E33;
-  --card: #14161B; --shadow: rgba(0,0,0,0.5); --good: #7FBF8E;
+[data-theme="dark"] {
+  --paper: #0C0D10;
+  --paper-2: #14161B;
+  --line: rgba(230,225,210,0.14);
+  --ink: #E6E3D8;
+  --ink-dim: #8C8E96;
+  --signal: #E0A552;
+  --signal-2: #B87E33;
+  --card: #14161B;
+  --shadow: rgba(0,0,0,0.5);
+  --good: #7FBF8E;
 }
 
 * { box-sizing: border-box; }

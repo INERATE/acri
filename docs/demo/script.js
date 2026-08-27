@@ -1,4 +1,14 @@
 (function () {
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme');
+      var isDark = cur === 'dark' || (!cur && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    });
+  }
+
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var io = new IntersectionObserver(function (entries) {

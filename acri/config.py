@@ -55,6 +55,7 @@ class Config:
     mcp: list[McpEntry] = field(default_factory=list)
     k: int = 5
     limits: Limits = field(default_factory=Limits)
+    builtin: list[str] = field(default_factory=list)  # opt-in acri.builtin tool names
 
 
 def _mcp_entry(raw: dict[str, Any]) -> McpEntry:
@@ -84,4 +85,5 @@ def from_yaml(path: str | Path) -> Config:
         mcp=[_mcp_entry(m) for m in data.get("mcp") or []],
         k=resolve.get("k", 5),
         limits=Limits(timeout_ms=limits.get("timeout_ms"), max_cost_per_task_usd=limits.get("max_cost_per_task_usd")),
+        builtin=list((data.get("tools") or {}).get("builtin") or []),
     )

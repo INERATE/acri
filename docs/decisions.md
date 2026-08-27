@@ -439,6 +439,16 @@ which validates it and names the credentials that are missing. That is most of t
 an interactive wizard for a fraction of the code. A full terminal wizard can follow if anyone
 asks for one.
 
+### The builtin tool pack — opt-in, not on by default
+
+`tools: builtin: [press.digest]` loads acri's own tools (`acri/builtin.py`) into the same
+corpus as `mcp:` entries. Silence means none load, same posture as `mcp:` itself. Only
+`press.digest` ships — `sandbox.run` was considered and rejected because sandbox config
+isn't a tool in the MCP sense (see `docs/research/future-work-tool-pack.md` for the
+reasoning that shaped this before it was built). Kept out of the paper's evaluation corpus
+deliberately: the accuracy numbers there measure resolving a caller's *own* tools, and a
+first-party pack is a separate surface with its own versioning obligations.
+
 ## Languages
 
 One, for now: **Python.**

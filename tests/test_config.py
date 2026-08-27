@@ -83,6 +83,15 @@ def test_from_yaml_rejects_sandbox_on_a_url_entry(tmp_path):
         from_yaml(_write(tmp_path, text))
 
 
+def test_from_yaml_parses_opted_in_builtin_tools(tmp_path):
+    config = from_yaml(_write(tmp_path, "version: 1\ntools:\n  builtin: [press.digest]\n"))
+    assert config.builtin == ["press.digest"]
+
+
+def test_from_yaml_defaults_builtin_to_empty(tmp_path):
+    assert from_yaml(_write(tmp_path, "version: 1\n")).builtin == []
+
+
 def test_missing_env_vars_reports_what_is_actually_missing(tmp_path, monkeypatch):
     path = _write(tmp_path, "version: 1\nmodels:\n  default: gemini-2.5-flash\n  cheap: gpt-4o-mini\n")
     config = from_yaml(path)

@@ -16,6 +16,7 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
+from .builtin import resolve_builtin
 from .config import Config, from_yaml
 from .credentials import missing_env_vars, provider_for
 from .corpus import index
@@ -73,7 +74,7 @@ def serve(config_path: str, host: str = "127.0.0.1", port: int = 8080, log_conve
     if missing:
         raise RuntimeError(f"missing credentials: {', '.join(missing)} -- run `acri check {config_path}`")
 
-    tools = asyncio.run(connect_all(config.mcp))
+    tools = asyncio.run(connect_all(config.mcp)) + resolve_builtin(config.builtin)
     corpus = index(tools)
     write_corpus_snapshot(corpus)  # lets studio show unresolved tools too, without connecting itself
     provider = provider_for(config.models.default or "gemini")

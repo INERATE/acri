@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The Resolve-Once Law — acri</title>
+<meta name="description" content="An animated walkthrough of how acri narrows hundreds of tools down to the few a model needs, and the caching argument behind it.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand"><span class="dot"></span> acri <span style="color:var(--ink-dim)">/ resolve-once</span></div>
+  <a class="nav-cta" href="https://github.com/INERATE/acri" target="_blank" rel="noopener">github.com/INERATE/acri</a>
+</nav>
+
+<main class="wrap">
+
+  <section class="hero">
+    <div class="eyebrow">Client-side capability resolution</div>
+    <h1>Show the model<br>five tools, not <em>five hundred</em>.</h1>
+    <p class="hero-sub">acri sits between your application and whichever model you call. Each task, it
+      reads your full tool corpus once and hands over only the few tools that call actually needs — then
+      never touches that prompt prefix again.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="#stage">Watch it resolve ↓</a>
+      <a class="btn-secondary" href="#evidence">See the measured numbers</a>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="stage-head">
+        <span>compass.resolve(query, corpus)</span>
+        <span class="live"><span class="pip"></span> simulated, from real recall@k data</span>
+      </div>
+      <canvas id="resolveCanvas" role="img" aria-label="Animation: 100 tool nodes narrowing to 5 highlighted matches as a query is resolved"></canvas>
+      <div class="stage-foot">
+        <div>corpus size<span class="num" id="statCorpus">100</span></div>
+        <div>offered to model<span class="num hit" id="statOffered">5</span></div>
+        <div>resolve time<span class="num" id="statTime">0.04 ms</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="beat reveal">
+    <div class="beat-label"><span class="stage-no">01</span><span>THE PROBLEM</span></div>
+    <h2>Every schema you add competes for the same attention.</h2>
+    <p class="lede">Anthropic's own tool-use documentation names 30–50 tools as the point where
+      selection accuracy starts to visibly degrade. Past that, the model isn't reading fewer
+      words — it's choosing between more things that look alike.</p>
+    <div class="wall" id="schemaWall"></div>
+    <div class="accuracy-drop">
+      <span class="big dim">84%</span>
+      <span class="arrow">→</span>
+      <span class="big" style="color:var(--signal)">92%</span>
+      <span class="mono" style="color:var(--ink-dim); font-size:0.85rem; max-width: 22ch;">tool-selection accuracy, all 100 tools shown vs. acri's top 5 — live gemini-2.5-flash, n=50</span>
+    </div>
+  </section>
+
+  <section class="beat reveal">
+    <div class="beat-label"><span class="stage-no">02</span><span>THE CACHING LAW</span></div>
+    <h2>Cutting tokens can cost <em style="font-style:italic;color:var(--signal)">more</em>, not less.</h2>
+    <p class="lede">Providers price a cached prompt prefix at roughly a tenth of the uncached rate.
+      Re-resolving tools every turn rewrites that prefix — trading a cache discount for a smaller
+      prompt is only a real saving once the cut is steep enough.</p>
+
+    <div class="balance">
+      <div class="beam bad">
+        <h3>Re-resolve every turn</h3>
+        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill" style="width:45%"></div></div><span>full price</span></div>
+        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill" style="width:38%"></div></div><span>full price</span></div>
+        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill" style="width:41%"></div></div><span>full price</span></div>
+        <p class="verdict">Cache never hits — the prefix changes every time.</p>
+      </div>
+      <div class="beam good">
+        <h3>Resolve once, append</h3>
+        <div class="bar-row"><span style="width:3.2rem">turn 1</span><div class="track"><div class="fill signal" style="width:45%"></div></div><span>full price</span></div>
+        <div class="bar-row"><span style="width:3.2rem">turn 2</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div>
+        <div class="bar-row"><span style="width:3.2rem">turn 3</span><div class="track"><div class="fill signal" style="width:9%"></div></div><span>cached</span></div>
+        <p class="verdict">One full-price write, then ~10% cost after.</p>
+      </div>
+    </div>
+
+    <div class="equation">r · C · p &nbsp;&lt;&nbsp; C · (p / 10) &nbsp;&nbsp;⟺&nbsp;&nbsp; <span class="k">r &lt; 1/10</span></div>
+    <p class="caveat">Where r is the fraction of the tool block kept and C·p is the full uncached
+      cost. Below a ~10× cut, rewriting a cached prefix is a net regression — the reason acri
+      resolves once per task and appends, rather than re-searching every turn.</p>
+  </section>
+
+  <section class="beat reveal">
+    <div class="beat-label"><span class="stage-no">03</span><span>STUDIO</span></div>
+    <h2>Watch the resolver think.</h2>
+    <p class="lede">Studio is acri's own dashboard — two read-only views over the same ledger.
+      No separate telemetry, no data leaving the machine.</p>
+
+    <div class="studio">
+      <div class="studio-tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-panel="mesh">topology</button>
+        <button role="tab" aria-selected="false" data-panel="trace">live trace</button>
+      </div>
+      <div class="studio-body">
+        <div class="panel active" id="panel-mesh">
+          <p class="mono" style="font-size:0.78rem;color:var(--ink-dim);margin-bottom:1rem;">servers, models, and every tool seen in ledger history</p>
+          <div class="mesh" id="meshNodes"></div>
+        </div>
+        <div class="panel" id="panel-trace">
+          <div id="ledgerFeed"></div>
+        </div>
+      </div>
+      <div class="studio-note">read-only · polls .acri/ledger.jsonl every 2s · never connects to a server itself</div>
+    </div>
+  </section>
+
+  <section class="beat reveal" id="evidence">
+    <div class="beat-label"><span class="stage-no">04</span><span>THE EVIDENCE</span></div>
+    <h2>What's actually measured — and what isn't.</h2>
+    <p class="lede">Every number below comes from a script in <code>assay/</code>. Recall degrades
+      as the corpus grows; we report that rather than tune it away.</p>
+    <div class="evidence-scroll">
+      <table class="evidence">
+        <thead><tr><th>k</th><th>recall@k, 100 tools</th><th>recall@k, 500 tools</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="num">74%</td><td class="num">60%</td></tr>
+          <tr><td class="num">3</td><td class="num">90%</td><td class="num">82%</td></tr>
+          <tr><td class="num">5</td><td class="num">100%</td><td class="num">92%</td></tr>
+          <tr><td class="num">10</td><td class="num">100%</td><td class="num">98%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="caveat">Single model (gemini-2.5-flash), one synthetic 500-tool corpus, n=50–52
+      queries. No embeddings baseline yet, no significance test on the 8-point accuracy gap.
+      Full write-up: <a href="https://github.com/INERATE/acri/blob/main/docs/research/paper.tex" style="color:var(--signal)">the paper</a>.</p>
+  </section>
+
+  <footer>
+    <div class="foot-grid">
+      <div>
+        <div class="install">pip install pyacri</div>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/INERATE/acri" target="_blank" rel="noopener">Source</a>
+        <a href="https://pypi.org/project/pyacri/" target="_blank" rel="noopener">PyPI</a>
+        <a href="https://github.com/INERATE/acri/blob/main/docs/architecture.md" target="_blank" rel="noopener">Architecture</a>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

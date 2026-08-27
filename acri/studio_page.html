@@ -18,8 +18,11 @@
   #graph { height: 360px; }
   .node-label { fill: #d8dee9; font-size: 11px; }
   .server-node { fill: #2b3550; stroke: #4a5b8c; }
-  .tool-node { fill: #1c2230; stroke: #3a4256; }
+  .tool-node { fill: #d8dee9; stroke: #d8dee9; }
+  .tool-node.hidden { fill: #1c2230; stroke: #3a4256; }
   .edge { stroke: #3a4256; stroke-width: 1; }
+  .legend { font-size: 11px; color: #6b7280; margin-top: 6px; }
+  .legend .sw { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 4px 0 12px; vertical-align: middle; }
   table { border-collapse: collapse; font-size: 12px; min-width: 600px; }
   th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #1c2230; }
   th { color: #6b7280; font-weight: 500; }
@@ -39,7 +42,11 @@
 <section id="panel-topology" class="active">
   <div id="models" class="hint" style="margin-bottom:10px"></div>
   <svg id="graph" width="900" height="360"></svg>
-  <div id="topology-empty" class="empty" style="display:none">No tools seen yet -- run a query with a ledger attached, then reload.</div>
+  <div class="legend">
+    <span class="sw" style="background:#d8dee9"></span>resolved at least once
+    <span class="sw" style="background:#1c2230;border:1px solid #3a4256"></span>registered, never resolved yet
+  </div>
+  <div id="topology-empty" class="empty" style="display:none">No tools registered yet -- run `acri up` at least once with a ledger attached, then reload.</div>
 </section>
 <section id="panel-live" style="overflow-x:auto">
   <table>
@@ -80,7 +87,7 @@ async function loadTopology() {
       const ta = angle + (j - (tools.length - 1) / 2) * 0.18;
       const tx = sx + 70 * Math.cos(ta), ty = sy + 70 * Math.sin(ta) + 40;
       svg.appendChild(el("line", { class: "edge", x1: sx, y1: sy, x2: tx, y2: ty }));
-      svg.appendChild(el("circle", { class: "tool-node", cx: tx, cy: ty, r: 4 }));
+      svg.appendChild(el("circle", { class: "tool-node" + (t.seen === 0 ? " hidden" : ""), cx: tx, cy: ty, r: 4 }));
       const label = el("text", { class: "node-label", x: tx + 6, y: ty + 3 });
       label.textContent = t.name + (t.seen > 1 ? ` (${t.seen})` : "");
       svg.appendChild(label);

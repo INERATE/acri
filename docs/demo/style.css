@@ -56,6 +56,37 @@ code, .mono { font-family: var(--font-mono); }
 }
 .nav-cta:hover { border-color: var(--signal); color: var(--signal); }
 
+.theme-toggle-btn {
+  background: #FFFFFF !important;
+  color: #16181C !important;
+  border: 1.5px solid var(--line) !important;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.45rem 1.1rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+}
+.theme-toggle-btn:hover {
+  background: #F8F9FA !important;
+  border-color: var(--signal) !important;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .theme-toggle-btn {
+  background: #1E2028 !important;
+  color: #E0A552 !important;
+  border-color: #E0A552 !important;
+  box-shadow: 0 2px 12px rgba(224, 165, 82, 0.25);
+}
+[data-theme="dark"] .theme-toggle-btn:hover {
+  background: #2A2D38 !important;
+}
+
 .hero { padding: clamp(3rem, 9vw, 7rem) 0 clamp(2rem, 6vw, 4rem); position: relative; }
 .eyebrow {
   font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase;

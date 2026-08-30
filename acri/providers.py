@@ -29,6 +29,8 @@ PROVIDERS: dict[str, Callable[..., Any]] = {
     # AnthropicVertex (clients.py) is a drop-in client, same .messages.create() shape.
     "bedrock": bedrock,
     "cloudflare": openai_compatible,
+    "azure-grok": openai_compatible,  # xAI Grok on Azure AI Foundry's newer /openai/v1 surface --
+    # OpenAI-SDK-compatible auth, same chat-completions shape, only base_url/key differ.
     "openrouter": openai_compatible,
     "nvidia": openai_compatible,
     "grok": openai_compatible,

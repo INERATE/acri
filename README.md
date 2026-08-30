@@ -55,7 +55,7 @@ Ingest raw audio, images, and documents across multi-stage pipelines. Resolve fa
 Connect 300+ enterprise cloud and database APIs (Kubernetes, AWS, Postgres, GitHub, Datadog). When an incident fires, acri isolates the exact diagnostic tools needed for troubleshooting, ensuring the agent never accidentally accesses destructive or unrelated operational tools.
 
 ### 5. 💰 Zero-Token-Waste Prompt Caching Architectures
-In long-running multi-turn sessions, acri resolves tools once per task and locks the schema prefix. This guarantees your application earns the **90% provider prompt-cache discount** ($r < 1/10$) across thousands of conversational turns.
+In long-running multi-turn sessions, acri resolves tools once per task and locks the schema prefix. This guarantees your application earns the **90% provider prompt-cache discount** ($r < 1/10$) across thousands of conversational turns — confirmed directly against [Anthropic's own pricing page](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) ("cache read tokens are 0.1x the base input tokens price").
 
 ## The system
 

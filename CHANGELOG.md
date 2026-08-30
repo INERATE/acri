@@ -3,6 +3,13 @@
 Prior releases (v0.3.0–v0.4.3) are tracked in git tags and their release commit
 messages, not backfilled here. This file starts at v0.5.0.
 
+## [0.7.0]
+ 
+### Added
+- Added three new direct cloud providers to canonical registry: `vertex-claude` (Anthropic Claude on Google Vertex AI), `azure-grok` (xAI Grok on Azure AI Foundry), and `azure-openai` (OpenAI on Azure AI Foundry).
+- Live 7-model multi-architecture benchmark coverage across OpenAI, Google, Anthropic, xAI, and Meta.
+- Full 131-test integration suite verified.
+
 ## [0.6.0]
 
 ### Added

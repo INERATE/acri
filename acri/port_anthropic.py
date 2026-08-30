@@ -10,7 +10,7 @@ from .port import GenerationResult
 from .schemas import to_anthropic_tools
 
 
-def anthropic(client: Any, prompt: str, resolved: list[Resolved], model: str = "claude-sonnet-4-6", max_tokens: int = 1024) -> GenerationResult:
+def anthropic(client: Any, prompt: str, resolved: list[Resolved], model: str = "claude-sonnet-5", max_tokens: int = 1024) -> GenerationResult:
     """Call a direct Anthropic Messages API client (the `anthropic` SDK shape).
     max_tokens is required by this API, unlike every other provider here --
     1024 is a plain default, pass a larger one for a longer expected reply."""

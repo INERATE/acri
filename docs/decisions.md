@@ -470,7 +470,7 @@ client's `base_url` and which env var holds the key differ, so none of them need
 port code, only a `_client_factory.py`/`clients.py` entry.
 
 `acri.yaml`'s `models: default:` accepts `provider/model` (e.g.
-`anthropic/claude-sonnet-4-6`) to name a provider explicitly, alongside the original bare
+`anthropic/claude-sonnet-5`) to name a provider explicitly, alongside the original bare
 model name (still inferred as gemini-or-openai, unchanged, so the acri.yaml already
 shipped in v0.5.0 keeps working). The split is on the *first* `/` only —
 `credentials.model_id_for()` — because OpenRouter/NVIDIA's own model ids are themselves

@@ -22,7 +22,7 @@ class GenerationResult:
     raw: Any
 
 
-def openai_compatible(client: Any, prompt: str, resolved: list[Resolved], model: str = "gpt-4o-mini") -> GenerationResult:
+def openai_compatible(client: Any, prompt: str, resolved: list[Resolved], model: str = "gpt-5.6-luna") -> GenerationResult:
     """Call any OpenAI-compatible client — OpenAI, vLLM, Ollama, DeepSeek, Together."""
     tools = to_openai_tools(resolved)
     response = client.chat.completions.create(

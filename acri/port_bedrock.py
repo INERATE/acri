@@ -10,7 +10,7 @@ from .port import GenerationResult
 from .schemas import to_bedrock_tools
 
 
-def bedrock(client: Any, prompt: str, resolved: list[Resolved], model: str = "us.anthropic.claude-sonnet-4-6") -> GenerationResult:
+def bedrock(client: Any, prompt: str, resolved: list[Resolved], model: str = "anthropic.claude-sonnet-5") -> GenerationResult:
     """Call a Bedrock Converse API client (boto3 `bedrock-runtime` client's `.converse()`)."""
     tools = to_bedrock_tools(resolved)
     kwargs: dict[str, Any] = {"modelId": model, "messages": [{"role": "user", "content": [{"text": prompt}]}]}

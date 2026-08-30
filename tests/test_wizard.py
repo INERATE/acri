@@ -34,7 +34,7 @@ def test_writes_a_working_config_with_an_mcp_server(tmp_path, monkeypatch, capsy
 
     from acri.config import from_yaml
     config = from_yaml(path)
-    assert config.models.default == "gemini-2.5-flash"
+    assert config.models.default == "gemini/gemini-2.5-flash"
     assert config.mcp[0].name == "github"
     assert config.mcp[0].command == ["npx", "-y", "@modelcontextprotocol/server-github"]
     assert "credentials look good" in capsys.readouterr().out
@@ -48,7 +48,29 @@ def test_openai_provider_picks_the_openai_default_model(tmp_path, monkeypatch):
     interactive_setup(path)
 
     from acri.config import from_yaml
-    assert from_yaml(path).models.default == "gpt-4o-mini"
+    assert from_yaml(path).models.default == "openai/gpt-5.6-luna"
+
+
+def test_anthropic_provider_picks_the_anthropic_default_model(tmp_path, monkeypatch):
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", _answer("anthropic", "n"))
+    path = tmp_path / "acri.yaml"
+
+    interactive_setup(path)
+
+    from acri.config import from_yaml
+    assert from_yaml(path).models.default == "anthropic/claude-sonnet-5"
+
+
+def test_an_unknown_provider_falls_back_to_gemini(tmp_path, monkeypatch):
+    monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+    monkeypatch.setattr("builtins.input", _answer("not-a-real-provider", "n"))
+    path = tmp_path / "acri.yaml"
+
+    interactive_setup(path)
+
+    from acri.config import from_yaml
+    assert from_yaml(path).models.default == "gemini/gemini-2.5-flash"
 
 
 def test_skipping_the_mcp_server_still_writes_a_valid_config(tmp_path, monkeypatch, capsys):

@@ -64,23 +64,28 @@ typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only
 
 ### Supported providers
 
-`models: default:` is a bare model name for the two providers acri has always inferred
-this way, or `provider/model` for any other one — the prefix names the provider
-explicitly, the rest is the literal model id (unaffected even if that id has its own
-slash, e.g. OpenRouter's `vendor/model` form). One provider per `acri up` process.
+acri is provider-agnostic by design — no model is "native" or first-class. Point it at
+any LLM: name the provider, drop in its API key (or nothing, for a local server), and
+acri connects. `models: default: provider/model` names the provider explicitly (the rest
+is the literal model id, unaffected even if that id itself has a slash, e.g. OpenRouter's
+`vendor/model` form). A bare model name with no `/` still resolves for gemini/openai
+specifically — pre-existing configs from before this table existed keep working unchanged
+— but writing the explicit `provider/model` form works identically for every provider,
+gemini and openai included, and is the form every example below uses on purpose. One
+provider per `acri up` process.
 
 | Provider | acri.yaml | Needs |
 |---|---|---|
-| Gemini (Developer API) | `default: gemini-2.5-flash` | `GEMINI_API_KEY` |
-| Google Vertex AI | `default: vertex/gemini-2.5-flash` | `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_PROJECT` |
-| OpenAI | `default: gpt-4o-mini` | `OPENAI_API_KEY` |
-| Anthropic (direct) | `default: anthropic/claude-sonnet-4-6` | `ANTHROPIC_API_KEY` |
-| AWS Bedrock | `default: bedrock/us.anthropic.claude-sonnet-4-6` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` (boto3's own chain) |
+| Anthropic (direct) | `default: anthropic/claude-sonnet-5` | `ANTHROPIC_API_KEY` |
+| AWS Bedrock | `default: bedrock/anthropic.claude-sonnet-5` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` (boto3's own chain) |
 | Cloudflare Workers AI | `default: cloudflare/@cf/meta/llama-3.3-70b-instruct` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
-| OpenRouter | `default: openrouter/meta-llama/llama-3.3-70b-instruct` | `OPENROUTER_API_KEY` |
-| NVIDIA NIM | `default: nvidia/meta/llama-3.3-70b-instruct` | `NVIDIA_API_KEY` |
+| Gemini (Developer API) | `default: gemini/gemini-2.5-flash` | `GEMINI_API_KEY` |
+| Google Vertex AI | `default: vertex/gemini-2.5-flash` | `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_PROJECT` |
 | Grok (xAI) | `default: grok/grok-4` | `XAI_API_KEY` |
+| NVIDIA NIM | `default: nvidia/meta/llama-3.3-70b-instruct` | `NVIDIA_API_KEY` |
 | Ollama (local) | `default: ollama/qwen2.5-coder:32b` | nothing — `OLLAMA_BASE_URL` optional, defaults to `localhost:11434` |
+| OpenAI | `default: openai/gpt-5.6-luna` | `OPENAI_API_KEY` |
+| OpenRouter | `default: openrouter/meta-llama/llama-3.3-70b-instruct` | `OPENROUTER_API_KEY` |
 | vLLM (local) | `default: vllm/your-model` | nothing — `VLLM_BASE_URL` optional, defaults to `localhost:8000` |
 | LM Studio (local) | `default: lmstudio/your-model` | nothing — `LMSTUDIO_BASE_URL` optional, defaults to `localhost:1234` |
 

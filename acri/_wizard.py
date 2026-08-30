@@ -11,6 +11,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from ._template import DEFAULT_MODEL as _DEFAULT_MODEL
+
 
 def _ask_mcp_block() -> str:
     if input("Add an MCP server now? [y/N] ").strip().lower() != "y":
@@ -47,8 +49,9 @@ def interactive_setup(path: Path) -> int:
         print("acri setup needs an interactive terminal -- run `acri init` for a non-interactive template.", file=sys.stderr)
         return 1
 
-    provider = input("Model provider? [gemini/openai] (gemini): ").strip().lower() or "gemini"
-    default_model = "gpt-4o-mini" if provider == "openai" else "gemini-2.5-flash"
+    choices = ", ".join(sorted(_DEFAULT_MODEL))
+    provider = input(f"Model provider? [{choices}] (gemini): ").strip().lower() or "gemini"
+    default_model = _DEFAULT_MODEL.get(provider, _DEFAULT_MODEL["gemini"])
     mcp_block = _ask_mcp_block()
 
     path.write_text(

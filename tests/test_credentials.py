@@ -9,7 +9,7 @@ def test_provider_for_infers_from_a_bare_model_name():
 
 
 def test_provider_for_reads_an_explicit_prefix():
-    assert provider_for("anthropic/claude-sonnet-4-6") == "anthropic"
+    assert provider_for("anthropic/claude-sonnet-5") == "anthropic"
     assert provider_for("ollama/qwen2.5-coder:32b") == "ollama"
 
 
@@ -20,7 +20,7 @@ def test_provider_for_splits_on_the_first_slash_only():
 
 
 def test_model_id_for_strips_the_provider_prefix():
-    assert model_id_for("anthropic/claude-sonnet-4-6") == "claude-sonnet-4-6"
+    assert model_id_for("anthropic/claude-sonnet-5") == "claude-sonnet-5"
 
 
 def test_model_id_for_keeps_a_vendor_slash_intact():

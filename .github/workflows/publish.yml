@@ -45,7 +45,7 @@ jobs:
         working-directory: rust
         run: |
           version=$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)
-          if curl -sf "https://crates.io/api/v1/crates/acri-core/$version" >/dev/null; then
+          if curl -sf -H "User-Agent: acri-ci-workflow" "https://crates.io/api/v1/crates/acri-core/$version" >/dev/null; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"

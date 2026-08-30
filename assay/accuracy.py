@@ -32,7 +32,7 @@ from .clients import CLIENTS
 from .fixtures import load_gold, load_tools
 from .report import print_accuracy_report
 
-_NO_DEFAULT_MODEL = {"cloudflare", "openrouter", "nvidia", "grok", "ollama", "vllm", "lmstudio"}
+_NO_DEFAULT_MODEL = {"cloudflare", "openrouter", "nvidia", "grok", "ollama", "vllm", "lmstudio", "azure-grok"}
 
 
 def run(provider: str, k: int = 5, model: str | None = None) -> None:

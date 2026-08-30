@@ -56,7 +56,7 @@ def client_for(provider: str) -> Any:
         account_id = os.environ["CLOUDFLARE_ACCOUNT_ID"]
         return openai.OpenAI(base_url=f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
                               api_key=os.environ["CLOUDFLARE_API_TOKEN"])
-    if provider == "azure-grok":
+    if provider in ("azure-grok", "azure-openai"):
         import openai
 
         return openai.OpenAI(base_url=os.environ["AZURE_AI_ENDPOINT"], api_key=os.environ["AZURE_AI_API_KEY"])

@@ -19,6 +19,7 @@ from .port import openai_compatible
 from .port_anthropic import anthropic
 from .port_bedrock import bedrock
 from .port_gemini import gemini
+from .port_openai_responses import openai_responses
 
 PROVIDERS: dict[str, Callable[..., Any]] = {
     "openai": openai_compatible,
@@ -31,6 +32,8 @@ PROVIDERS: dict[str, Callable[..., Any]] = {
     "cloudflare": openai_compatible,
     "azure-grok": openai_compatible,  # xAI Grok on Azure AI Foundry's newer /openai/v1 surface --
     # OpenAI-SDK-compatible auth, same chat-completions shape, only base_url/key differ.
+    "azure-openai": openai_responses,  # same /openai/v1 surface, but OpenAI models there speak
+    # the newer Responses API, not chat-completions -- see port_openai_responses.py.
     "openrouter": openai_compatible,
     "nvidia": openai_compatible,
     "grok": openai_compatible,

@@ -7,6 +7,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   publish-pypi:
     name: Publish Python (PyPI)
@@ -14,6 +18,7 @@ jobs:
     environment: pypi
     permissions:
       id-token: write  # OIDC trusted publishing -- no stored token/secret
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,6 +30,9 @@ jobs:
   publish-crates:
     name: Publish Rust (crates.io)
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -37,6 +45,9 @@ jobs:
   publish-npm:
     name: Publish TypeScript (npm)
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for npm provenance / OIDC publishing
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,4 +61,4 @@ jobs:
         run: |
           npm ci || npm install
           npm run build
-          npm publish --access public
+          npm publish --access public --provenance

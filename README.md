@@ -40,22 +40,32 @@ LLM API, and decides which tools the model gets to see this turn.
 
 ## What you can build with acri
 
-Just like Blender is the rendering engine behind 3D animation, VFX, and game design, **acri is the tool-resolution engine behind high-scale agentic workflows**. You build the workflow, tools, and prompts; acri ensures your agents never choke on hundreds of tools or waste prompt-caching discounts.
+acri doesn't ship a Blender integration, a Stripe integration, or any of the tools below —
+it never generates content or executes anything. What it does is stay out of the way once
+your own tool catalog gets large, on whatever you connect it to. Four hypothetical shapes,
+illustrative rather than measured (none of these specific scenarios has an `assay/` run —
+only the corpus-size-vs-recall numbers earlier in this README do):
 
-### 1. 🎨 Creative & 3D Design Studio (Blender, Figma, Video, SVGs)
-Connect 100+ creative MCP tools (Blender Python scripting, Figma REST API, Image generation, FFmpeg video processing). When an agent is asked *"Render a 3D isometric cube with glass material and export a 10s MP4"*, acri resolves only the 4 relevant Blender and video rendering tools in 0.18ms, preventing hallucinated tool choices.
+1. **A creative pipeline** — Blender scripting, a design-tool REST API, image generation,
+   video processing as MCP servers. A request like "render this scene and export a clip"
+   only needs the handful of tools relevant to *that* request out of everything connected.
+2. **DevOps/SRE tooling** — cloud infra, cluster, database, and alerting tools all
+   registered at once. An incoming alert resolves against a few diagnostic tools, not
+   the full catalog including destructive ones the model was never asked for.
+3. **A multi-phase research pipeline** — this one *is* real and verified: resolve+call a
+   fast/multimodal model for research, compress the result with `acri.press()`, resolve+call
+   a stronger model for the write-up. Two independent `acri.run()` calls, your code decides
+   the handoff — acri never switches providers mid-task itself. Full worked example:
+   [`docs/cookbook.md`](docs/cookbook.md).
+4. **Business-system tooling** — CRM, billing, ticketing APIs registered together. A billing
+   query resolves against billing tools specifically, not the full connected surface.
 
-### 2. ⚡ Autonomous 24/7 DevOps & Cloud SRE
-An autonomous agent monitoring AWS EC2, Kubernetes clusters, PostgreSQL, GitHub Actions, Datadog, and PagerDuty (300+ operational tools). When an alert fires (*"High memory pressure on prod-db-01"*), acri instantly isolates the exact 5 SQL diagnostic and container restart tools without exposing sensitive destruction commands.
-
-### 3. 🎬 Multi-Modal Intelligence & Research Pipeline
-Feed an agent raw PDFs, audio recordings, and UI screenshots. The orchestrator uses acri to supply document parsing and audio transcription tools to a multimodal model (Gemini Flash), compresses large raw tool results with `acri.press()`, and hands off the digest to a deep reasoning model (Claude Sonnet) to draft an executive report.
-
-### 4. 🏢 Enterprise Business Operations (Salesforce, Stripe, Jira, Zendesk)
-Connect your entire corporate software stack (200+ API tools). For a customer billing inquiry, acri dynamically routes only the Stripe refund and invoice lookup tools, eliminating accidental tool calls into CRM marketing campaigns.
-
-### 5. 💰 Zero-Token-Waste Prompt Caching Architecture
-In long-running agent chats, acri locks the tool-schema prefix once per task, ensuring your application earns **90% prompt-cache discounts** ($r < 1/10$) across thousands of conversational turns.
+The one number here that *is* measured and receipted: providers price a cached prompt
+prefix at roughly a tenth of the uncached rate — confirmed directly against
+[Anthropic's own pricing page](https://platform.claude.com/docs/en/build-with-claude/prompt-caching)
+("cache read tokens are 0.1× the base input tokens price") — which is why acri resolves
+once per task and only appends after, never rewrites (§3.2 in the paper has the full
+argument, `docs/decisions.md` has the arithmetic).
 
 ## The system
 

@@ -13,7 +13,7 @@ DEFAULT_MODEL = {
     "bedrock": "bedrock/anthropic.claude-sonnet-5",
     "cloudflare": "cloudflare/@cf/meta/llama-3.3-70b-instruct",
     "openrouter": "openrouter/meta-llama/llama-3.3-70b-instruct",
-    "nvidia": "nvidia/meta/llama-3.3-70b-instruct", "grok": "grok/grok-4",
+    "nvidia": "nvidia/meta/llama-3.3-70b-instruct", "grok": "grok/grok-4.6",
     "ollama": "ollama/qwen2.5-coder:32b", "vllm": "vllm/your-model", "lmstudio": "lmstudio/your-model",
 }
 

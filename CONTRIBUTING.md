@@ -39,7 +39,16 @@ held to that standard — the constraint is the product.
 1. Open an issue first for anything non-trivial — a template is provided. Small fixes can
    go straight to a PR.
 2. Fork, branch (`feat/<slug>` or `fix/<slug>`).
-3. Run the self-checks (see `.github/workflows/ci.yml` for what CI runs).
+3. Run the same checks CI runs, before you push — CI runs nothing beyond this:
+   ```bash
+   pip install -e ".[dev]"
+   pytest -q
+   ```
+   That's the whole gate for `port`/`corpus`/`compass`/config changes — no provider SDK
+   needed even for a new `port_*.py` adapter, since every adapter takes a duck-typed
+   client (fakes in the test, real SDK only at actual call time). Touching `docs/`,
+   `README.md`, or any `.svg`/`.html`: also see the claims-policy script in
+   `.github/workflows/ci.yml` — no unreceipted `%`/`x faster` claim survives it.
 4. PR describing what it does, **why it is the minimal version**, and what you
    deliberately did not build.
 5. One maintainer review plus green CI merges it.

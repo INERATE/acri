@@ -81,7 +81,7 @@ provider per `acri up` process.
 | Cloudflare Workers AI | `default: cloudflare/@cf/meta/llama-3.3-70b-instruct` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
 | Gemini (Developer API) | `default: gemini/gemini-2.5-flash` | `GEMINI_API_KEY` |
 | Google Vertex AI | `default: vertex/gemini-2.5-flash` | `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_PROJECT` |
-| Grok (xAI) | `default: grok/grok-4` | `XAI_API_KEY` |
+| Grok (xAI) | `default: grok/grok-4.6` | `XAI_API_KEY` |
 | NVIDIA NIM | `default: nvidia/meta/llama-3.3-70b-instruct` | `NVIDIA_API_KEY` |
 | Ollama (local) | `default: ollama/qwen2.5-coder:32b` | nothing — `OLLAMA_BASE_URL` optional, defaults to `localhost:11434` |
 | OpenAI | `default: openai/gpt-5.6-luna` | `OPENAI_API_KEY` |
@@ -124,6 +124,15 @@ corpus = acri.index(tools)          # build once, reuse across the whole task
 result = acri.run("what's the weather in Tokyo?", corpus, my_openai_client)
 print(result.tool_calls)            # [{"name": "get_weather", "arguments": '{"city": "Tokyo"}'}]
 ```
+
+**Using an AI coding agent to add this to an existing project?** Copy
+[`skills/acri-setup/SKILL.md`](skills/acri-setup/SKILL.md) into that project's
+`.claude/skills/acri-setup/SKILL.md` (Claude Code) — it installs the right extras, picks
+a provider without assuming one, writes a working `acri.yaml`, and wires `acri.run()`
+into the existing call site. A skill, not an MCP server: acri is a library integrated
+once at setup time, not a live tool an agent calls turn over turn — there's nothing for
+an MCP server to expose here that the two-line integration in step 6 doesn't already do
+more directly.
 
 `acri.run()` resolves, calls the provider, and — if you pass `ledger=acri.Ledger()` — records
 the trace. Prefer to drive the pieces yourself? `acri.resolve(query, corpus, k=5)` returns the

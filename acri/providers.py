@@ -25,6 +25,8 @@ PROVIDERS: dict[str, Callable[..., Any]] = {
     "gemini": gemini,
     "vertex": gemini,  # same wire format as gemini, auth-only difference (clients.py)
     "anthropic": anthropic,
+    "vertex-claude": anthropic,  # Claude-on-Vertex speaks Anthropic's wire format, not Gemini's --
+    # AnthropicVertex (clients.py) is a drop-in client, same .messages.create() shape.
     "bedrock": bedrock,
     "cloudflare": openai_compatible,
     "openrouter": openai_compatible,

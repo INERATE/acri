@@ -37,6 +37,11 @@ def client_for(provider: str) -> Any:
         import anthropic
 
         return anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    if provider == "vertex-claude":
+        from anthropic import AnthropicVertex
+
+        return AnthropicVertex(project_id=os.environ["GOOGLE_CLOUD_PROJECT"],
+                                region=os.environ.get("GOOGLE_CLOUD_LOCATION", "global"))
     if provider == "bedrock":
         import boto3
 

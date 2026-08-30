@@ -16,6 +16,7 @@ from .providers import PROVIDERS
 # (Ollama/vLLM/LM Studio) needs no key at all: None.
 _ENV_VARS: dict[str, str | None] = {
     "gemini": "GEMINI_API_KEY", "vertex": "GOOGLE_APPLICATION_CREDENTIALS",
+    "vertex-claude": "GOOGLE_APPLICATION_CREDENTIALS",
     "openai": "OPENAI_API_KEY", "anthropic": "ANTHROPIC_API_KEY",
     "bedrock": "AWS_ACCESS_KEY_ID", "cloudflare": "CLOUDFLARE_API_TOKEN",
     "openrouter": "OPENROUTER_API_KEY", "nvidia": "NVIDIA_API_KEY", "grok": "XAI_API_KEY",

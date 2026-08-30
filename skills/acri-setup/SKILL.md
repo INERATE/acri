@@ -23,26 +23,26 @@ problem that may not exist yet here.
 
 ## 2. Install
 
+Choose your language ecosystem:
+
 ```bash
+# Python (PyPI)
 pip install pyacri
-```
+pip install "pyacri[yaml]"       # for acri.yaml config and CLI tools
 
-Only `acri`'s core (`corpus`, `compass`) is dependency-free. `acri.yaml` support needs
-the `yaml` extra; `acri up`/`acri studio` need `server`/`studio`:
+# TypeScript / Node.js (npm)
+npm install acri-core
 
-```bash
-pip install "pyacri[yaml]"       # acri.yaml, acri init/check
-pip install "pyacri[server]"     # acri up
-pip install "pyacri[studio]"     # acri studio
+# Rust (crates.io)
+cargo add acri-core
 ```
 
 ## 3. Ask which provider, don't assume
 
 Check the project's existing code/env first — an existing `OPENAI_API_KEY`,
-`ANTHROPIC_API_KEY`, an `openai.OpenAI(...)` call, etc. is a strong signal. If nothing
+`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, an `openai.OpenAI(...)` call, etc. is a strong signal. If nothing
 points at one provider, ask. Do not default silently to any single provider — acri
-treats all of them equally. Full list with the exact `acri.yaml` line and required
-env var for each: `README.md`, "Supported providers" table.
+supports 12 providers equally (Gemini, Anthropic, OpenAI, AWS Bedrock, Cloudflare, OpenRouter, NVIDIA NIM, Grok, Ollama, vLLM, LM Studio).
 
 ## 4. Write `acri.yaml`
 
@@ -53,11 +53,8 @@ from scratch — run it, then fill in the picked provider:
 acri init
 ```
 
-The `models: default:` line takes `provider/model`, e.g. `anthropic/claude-sonnet-5`
-or `ollama/qwen2.5-coder:32b` for a local server (no key needed there). If the project
-has MCP servers already configured (check for an existing MCP client config), add them
-under `mcp:` — same `name`/`command` or `name`/`url` shape as the tools it already
-uses; do not invent a server that isn't actually there.
+The `models: default:` line takes `provider/model`, e.g. `anthropic/claude-3-7-sonnet-20250219`,
+`openai/gpt-4o`, `gemini/gemini-2.0-flash`, or `ollama/qwen2.5-coder:32b` for local models.
 
 ## 5. Verify credentials before touching any code
 
@@ -74,6 +71,7 @@ Find where the project currently builds its tools list and calls the model. The
 minimal integration is two lines around that call, nothing else in the codebase
 changes:
 
+### Python Integration:
 ```python
 import acri
 
@@ -82,20 +80,22 @@ resolved = acri.resolve(query, corpus, k=5)
 # hand `resolved` to whatever already calls the model, instead of the full tool list
 ```
 
-Or let acri make the call too, if nothing provider-specific happens between resolving
-and calling:
+### TypeScript / Node.js Integration (`npm install acri-core`):
+```typescript
+import { index, resolve } from 'acri-core';
 
-```python
-result = acri.run(query, corpus, existing_client, provider="anthropic")
+const corpus = index(existingTools); // build once at startup
+const resolved = resolve(query, corpus, 5);
+// pass resolved.map(r => r.tool) to your LLM API call
 ```
 
-`provider` here is one of `acri.providers.PROVIDERS`' keys (same names as
-`acri.yaml`'s prefix convention) — match whatever `existing_client` actually is.
+### Rust Integration (`cargo add acri-core`):
+```rust
+use acri_core::{index, resolve};
 
-**Do not** rebuild `corpus` inside a request handler or a loop — it is meant to be
-built once (module load / app startup) and reused. Rebuilding it per-turn defeats the
-entire point (`docs/decisions.md`'s caching argument) and is the single most common
-mistake when wiring acri in.
+let corpus = index(&existing_tools)?; // build once
+let resolved = resolve("what is the weather in Tokyo", &corpus, 5);
+```
 
 ## 7. What NOT to add
 

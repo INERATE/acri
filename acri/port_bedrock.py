@@ -10,10 +10,17 @@ from .port import GenerationResult
 from .schemas import to_bedrock_tools
 
 
-def bedrock(client: Any, prompt: str, resolved: list[Resolved], model: str = "anthropic.claude-sonnet-5") -> GenerationResult:
-    """Call a Bedrock Converse API client (boto3 `bedrock-runtime` client's `.converse()`)."""
+def bedrock(client: Any, prompt: str | list[dict[str, Any]], resolved: list[Resolved], model: str = "anthropic.claude-sonnet-5") -> GenerationResult:
+    """Call a Bedrock Converse API client (boto3 `bedrock-runtime` client's `.converse()`).
+
+    `prompt` is plain text, or -- for image/audio -- a caller-built list of Bedrock
+    content blocks (`[{"text": ...}, {"image": {"format": ..., "source": {"bytes": ...}}}]`),
+    passed straight through. Unlike the other three ports, Bedrock's `content` field is
+    always a list, never a bare string, so a plain string needs the explicit wrap below --
+    the others' own wire format accepts either shape, so they need no such branch."""
     tools = to_bedrock_tools(resolved)
-    kwargs: dict[str, Any] = {"modelId": model, "messages": [{"role": "user", "content": [{"text": prompt}]}]}
+    content = prompt if isinstance(prompt, list) else [{"text": prompt}]
+    kwargs: dict[str, Any] = {"modelId": model, "messages": [{"role": "user", "content": content}]}
     if tools:
         kwargs["toolConfig"] = {"tools": tools}
     response = client.converse(**kwargs)

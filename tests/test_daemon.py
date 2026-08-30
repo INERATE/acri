@@ -34,6 +34,25 @@ def test_handle_chat_completion_calls_the_real_acri_run():
     }]
 
 
+def test_handle_chat_completion_resolves_on_text_but_sends_the_full_multimodal_content():
+    """An incoming multimodal request must not crash compass.resolve() (which needs
+    plain text) while still reaching the model with the image intact."""
+    corpus = index([Tool(name="get_weather", description="Get the current weather for a city")])
+    image_content = [
+        {"type": "text", "text": "what's the weather in this photo?"},
+        {"type": "image_url", "image_url": {"url": "data:image/png;base64,AAAA"}},
+    ]
+
+    def create(**kwargs):
+        assert kwargs["messages"][0]["content"] == image_content
+        assert kwargs["tools"][0]["function"]["name"] == "get_weather"
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="sunny", tool_calls=None))])
+
+    request = {"messages": [{"role": "user", "content": image_content}]}
+    response = handle_chat_completion(request, corpus, _client(create), provider="openai", k=1)
+    assert response["choices"][0]["message"]["content"] == "sunny"
+
+
 def test_handle_chat_completion_with_no_messages_is_an_empty_query():
     corpus = index([Tool(name="noop", description="does nothing")])
     client = _client(lambda **kw: SimpleNamespace(

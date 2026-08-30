@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from . import run
+from ._openai_wire import extract_text
 from .corpus import Corpus
 from .ledger import Ledger
 from .port import GenerationResult
@@ -55,16 +56,17 @@ def handle_chat_completion(
     """Handle one OpenAI-shaped `/v1/chat/completions` request via acri.run() --
     not a reimplementation of resolve+call.
 
-    Single-turn only: the last message's content is the query. `acri/server.py`
-    wraps this in SSE at the wire level; multi-turn history and true upstream
-    streaming (vs. one blocking call chunked out) are still open.
+    Single-turn only: the last message's content is the query -- a plain string, or an
+    OpenAI-shaped multimodal list (image_url/input_audio parts), passed through as
+    run()'s `prompt` unchanged. `acri/server.py` wraps this in SSE at the wire level;
+    multi-turn history and true upstream streaming are still open.
     """
     messages = request.get("messages") or []
-    query = messages[-1]["content"] if messages else ""
+    content = messages[-1]["content"] if messages else ""
     result = run(
-        query, corpus, client, provider,
+        extract_text(content), corpus, client, provider,
         k=k, model=request.get("model"), cheap_model=cheap_model,
-        ledger=ledger, cache=cache,
+        ledger=ledger, cache=cache, prompt=None if isinstance(content, str) else content,
     )
     message: dict[str, Any] = {"role": "assistant", "content": result.text}
     if result.tool_calls:

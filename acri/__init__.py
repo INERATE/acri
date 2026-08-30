@@ -52,12 +52,14 @@ def run(
     cheap_model: str | None = None,
     ledger: Ledger | None = None,
     cache: dict[Any, GenerationResult] | None = None,
+    prompt: str | list[dict[str, Any]] | None = None,
 ) -> GenerationResult:
     """Resolve tools for `query`, call `provider` with them, log the trace if a ledger is given.
 
-    `cache` (a dict) skips a repeated (provider, model, query, offered tools) call -- see
-    port.cached_call, decisions.md #8c. `cheap_model` routes this one call to a cheaper
-    tier -- see router.route, decisions.md #1.
+    `query` is always plain text -- BM25 needs tokens, not media. For image/audio, build a
+    provider-shaped content list yourself and pass it as `prompt`; acri never encodes media.
+    A multimodal `prompt` skips `cache` (avoids two different images colliding on one key) --
+    see port.cached_call, decisions.md #8c. `cheap_model`: router.route, decisions.md #1.
     """
     call = PROVIDERS.get(provider)
     if call is None:
@@ -66,9 +68,11 @@ def run(
     start = time.time()
     resolved = _compass_resolve(query, corpus, k)
     offered = [*resolved, Resolved(tool=FIND_MORE_TOOLS, score=0.0)]
+    sent = query if prompt is None else prompt
+    effective_cache = cache if prompt is None else None
     key = (provider, model, query, tuple(r.tool.name for r in resolved))
     kwargs = {"model": model} if model else {}
-    result = cached_call(call, cache, key, client, query, offered, **kwargs)
+    result = cached_call(call, effective_cache, key, client, sent, offered, **kwargs)
     if ledger is not None:
         selected = [c["name"] for c in result.tool_calls]
         ledger.record(query, resolved, selected, (time.time() - start) * 1000, corpus_size=len(corpus))

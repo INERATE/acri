@@ -138,6 +138,14 @@ more directly.
 the trace. Prefer to drive the pieces yourself? `acri.resolve(query, corpus, k=5)` returns the
 ranked tools; `acri.gemini` / `acri.openai_compatible` take it from there.
 
+**Image or audio alongside the query?** `acri.run()`'s `query` always stays plain text —
+that's what resolves tools — but an optional `prompt=` sends whatever you actually want the
+model to see: `acri.run(query, corpus, client, prompt=[{"type": "text", "text": query}, {"type": "image_url", "image_url": {"url": data_uri}}])`.
+Build the content list in whichever shape your provider expects (OpenAI/Anthropic/Gemini/Bedrock
+each differ slightly) — acri passes it through unchanged, the same reason it never imports a
+provider SDK to encode media itself. A multimodal `prompt` skips the cache automatically: two
+different images behind the same query text must never collide on one cache key.
+
 Read [`docs/architecture.md`](docs/architecture.md) for the full design, the prior art it
 builds on, and the claims it explicitly refuses to make. Read
 [`docs/decisions.md`](docs/decisions.md) for every capability that was proposed and cut,

@@ -6,6 +6,19 @@ messages, not backfilled here. This file starts at v0.5.0.
 ## [0.6.0]
 
 ### Added
+- Multimodal passthrough: `acri.run(..., prompt=[...])` sends a caller-built,
+  provider-shaped content list (image/audio) to the model while `query` stays
+  plain text for tool resolution. Fixed a real bug found while building this:
+  `port_bedrock.py` always wrapped `prompt` in `{"text": prompt}}`, so a list
+  would have nested wrong; the other three ports needed no change; each
+  provider's own `content` field already accepts a string or a block list.
+  `acri up`'s HTTP handler (`daemon.py`) extracts just the text portion of an
+  incoming OpenAI-shaped multimodal request for resolution, and forwards the
+  full content unchanged. A multimodal `prompt` bypasses `cache` automatically
+  — two different images behind the same query text must never share a key.
+- `acri.press`/`acri.recover`/`acri.Pressed` now reachable from the top-level
+  package, not just `acri.press.press()` — a real gap surfaced while testing
+  the resolve→run→press→resolve→run multi-phase pattern end to end.
 - Multi-provider support: Anthropic (direct), AWS Bedrock, Cloudflare Workers AI,
   OpenRouter, NVIDIA NIM, Grok, and local servers (Ollama, vLLM, LM Studio) — 12
   providers total, none "native." One canonical `acri.providers.PROVIDERS` registry
@@ -45,8 +58,8 @@ messages, not backfilled here. This file starts at v0.5.0.
   runnable commands instead of pointing at the workflow file.
 
 ### Tests
-- 122 passing Python tests (was 103; +19 for the 12-provider registry, the new
-  native adapters, and `credentials.py`'s expanded parsing).
+- 131 passing Python tests (was 103; +28 for the 12-provider registry, the new
+  native adapters, `credentials.py`'s expanded parsing, and multimodal passthrough).
 - Verified CI needs no new dependencies: ran the full suite in a clean venv with
   only the `dev` extra installed (no boto3/anthropic/openai) — every new module's
   SDK import is function-scoped, never at module level. 9/9 Rust, 5/5 TypeScript,

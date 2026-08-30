@@ -35,11 +35,23 @@ def test_bedrock_parses_a_tool_use_block():
 def test_bedrock_parses_plain_text_with_no_tools_offered():
     def converse(**kwargs):
         assert "toolConfig" not in kwargs
+        assert kwargs["messages"][0]["content"] == [{"text": "hello"}]  # plain string still gets wrapped
         return {"output": {"message": {"content": [{"text": "It's sunny."}]}}}
 
     result = bedrock(_fake_bedrock_client(converse), "hello", [])
     assert result.text == "It's sunny."
     assert result.tool_calls == []
+
+
+def test_bedrock_passes_a_multimodal_content_list_through_unwrapped():
+    image_prompt = [{"text": "what's in this image?"}, {"image": {"format": "png", "source": {"bytes": b"fake"}}}]
+
+    def converse(**kwargs):
+        assert kwargs["messages"][0]["content"] == image_prompt  # not re-wrapped in another {"text": [...]}
+        return {"output": {"message": {"content": [{"text": "a cat"}]}}}
+
+    result = bedrock(_fake_bedrock_client(converse), image_prompt, [])
+    assert result.text == "a cat"
 
 
 def test_bedrock_handles_a_guardrail_block_without_crashing():

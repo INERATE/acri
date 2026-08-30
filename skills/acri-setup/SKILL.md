@@ -54,7 +54,7 @@ acri init
 ```
 
 The `models: default:` line takes `provider/model`, e.g. `anthropic/claude-sonnet-5`,
-`openai/gpt-5.6-luna`, `gemini/gemini-2.5-flash`, or `ollama/qwen2.5-coder:32b` for local
+`openai/gpt-5.6-luna`, `gemini/gemini-2.5-flash`, `azure-openai/gpt-5-mini`, `azure-grok/grok-4.6`, `vertex-claude/claude-sonnet-5`, or `ollama/qwen2.5-coder:32b` for local
 models. Check README.md's "Supported providers" table for the current default per
 provider before hardcoding a model string -- providers ship new models regularly and
 a stale one here is worse than none.

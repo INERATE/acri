@@ -38,6 +38,25 @@ LLM API, and decides which tools the model gets to see this turn.
 - **Not a proxy or gateway.** No process to run, no port to open, no network hop added.
 - **Not a model.** Bring your own key. acri never calls an LLM you didn't ask for.
 
+## What you can build with acri
+
+Just like Blender is the rendering engine behind 3D animation, VFX, and game design, **acri is the tool-resolution engine behind high-scale agentic workflows**. You build the workflow, tools, and prompts; acri ensures your agents never choke on hundreds of tools or waste prompt-caching discounts.
+
+### 1. 🎨 Creative & 3D Design Studio (Blender, Figma, Video, SVGs)
+Connect 100+ creative MCP tools (Blender Python scripting, Figma REST API, Image generation, FFmpeg video processing). When an agent is asked *"Render a 3D isometric cube with glass material and export a 10s MP4"*, acri resolves only the 4 relevant Blender and video rendering tools in 0.18ms, preventing hallucinated tool choices.
+
+### 2. ⚡ Autonomous 24/7 DevOps & Cloud SRE
+An autonomous agent monitoring AWS EC2, Kubernetes clusters, PostgreSQL, GitHub Actions, Datadog, and PagerDuty (300+ operational tools). When an alert fires (*"High memory pressure on prod-db-01"*), acri instantly isolates the exact 5 SQL diagnostic and container restart tools without exposing sensitive destruction commands.
+
+### 3. 🎬 Multi-Modal Intelligence & Research Pipeline
+Feed an agent raw PDFs, audio recordings, and UI screenshots. The orchestrator uses acri to supply document parsing and audio transcription tools to a multimodal model (Gemini Flash), compresses large raw tool results with `acri.press()`, and hands off the digest to a deep reasoning model (Claude Sonnet) to draft an executive report.
+
+### 4. 🏢 Enterprise Business Operations (Salesforce, Stripe, Jira, Zendesk)
+Connect your entire corporate software stack (200+ API tools). For a customer billing inquiry, acri dynamically routes only the Stripe refund and invoice lookup tools, eliminating accidental tool calls into CRM marketing campaigns.
+
+### 5. 💰 Zero-Token-Waste Prompt Caching Architecture
+In long-running agent chats, acri locks the tool-schema prefix once per task, ensuring your application earns **90% prompt-cache discounts** ($r < 1/10$) across thousands of conversational turns.
+
 ## The system
 
 ```

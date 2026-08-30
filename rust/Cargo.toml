@@ -2,7 +2,11 @@
 name = "acri-core"
 version = "0.1.0"
 edition = "2021"
-description = "Minimal Rust port of acri's core resolver (corpus + compass) -- see README.md in this directory"
+description = "Minimal Rust port of acri capability resolver (corpus + compass)"
 license = "MIT"
+repository = "https://github.com/INERATE/acri"
+readme = "README.md"
+keywords = ["llm", "mcp", "tools", "bm25", "ai"]
+categories = ["command-line-utilities", "algorithms"]
 
 [dependencies]

@@ -6,6 +6,13 @@ messages, not backfilled here. This file starts at v0.5.0.
 ## [0.6.0]
 
 ### Added
+- `acri-core` published to npm and crates.io (v0.1.0, corpus+compass only, same
+  scope as the source ports) — ahead of `docs/decisions.md`'s own stated gate for
+  each, same override pattern used elsewhere in this project, stated plainly in
+  each package's own README rather than glossed over. `.github/workflows/publish.yml`
+  now publishes all three registries on a GitHub Release; a version-already-published
+  check guards crates.io/npm so a Python-only release doesn't fail those two jobs
+  by re-attempting an unchanged version.
 - Multimodal passthrough: `acri.run(..., prompt=[...])` sends a caller-built,
   provider-shaped content list (image/audio) to the model while `query` stays
   plain text for tool resolution. Fixed a real bug found while building this:

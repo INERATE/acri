@@ -58,9 +58,13 @@ acri
 └── assay     the proving ground — the only place a benchmark number may come from
 
 examples/     end-to-end scripts against a real MCP server — not part of the installed package
-rust/         minimal Rust port of corpus + compass, v0.1 scope only
-typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only
+rust/         minimal Rust port of corpus + compass, v0.1 scope only — cargo add acri-core
+typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only — npm install acri-core
 ```
+
+Both published ahead of their own stated gate in `docs/decisions.md` — see each directory's
+own README for that reasoning stated plainly, not glossed over. Same v0.1 scope either way:
+`corpus`/`compass` only, nothing else ported.
 
 ### Supported providers
 

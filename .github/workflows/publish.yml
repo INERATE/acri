@@ -36,7 +36,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      # rust/ and typescript/ version independently of the Python release that
+      # actually triggers this workflow -- every GitHub Release re-publishes
+      # both unconditionally, and crates.io/npm both reject re-publishing an
+      # unchanged version. Skip rather than fail loudly on every Python-only release.
+      - name: Skip if this version is already published
+        id: check
+        working-directory: rust
+        run: |
+          version=$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)
+          if curl -sf "https://crates.io/api/v1/crates/acri-core/$version" >/dev/null; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish to crates.io
+        if: steps.check.outputs.skip == 'false'
         working-directory: rust
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
@@ -46,7 +61,7 @@ jobs:
     name: Publish TypeScript (npm)
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for npm provenance / OIDC publishing
+      id-token: write  # required for npm provenance
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -54,7 +69,18 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
+      - name: Skip if this version is already published
+        id: check
+        working-directory: typescript
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "acri-core@$version" version >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       - name: Install, Build & Publish to npm
+        if: steps.check.outputs.skip == 'false'
         working-directory: typescript
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

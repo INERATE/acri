@@ -22,11 +22,13 @@ cases exactly, same fixture and queries, and passes.
 > **TypeScript** | A real gap, and the JavaScript agent ecosystem is large.
 > Port after the Python package has users, never in parallel with it.
 
-That condition is not met — there is no PyPI release with real users yet
-([`.github/workflows/publish.yml`](../.github/workflows/publish.yml) exists
-but hasn't been triggered). Shipping this now is exactly the scenario that
-line warns against: it doubles the maintenance surface for every future acri
-feature before anything has shown someone actually wants the TypeScript side.
+`pyacri` is live on PyPI (has been since v0.4.0) with real download activity
+(547 in the last 30 days — [pypistats.org/packages/pyacri](https://pypistats.org/packages/pyacri),
+checked live, not download count alone confused for "real users"). Shipping
+this in parallel with it, rather than after evidence someone specifically
+wants the TypeScript side, is exactly the scenario that line warns against:
+it doubles the maintenance surface for every future acri feature on a guess,
+not a measured need.
 Built anyway at the maintainer's explicit request — the same override pattern
 used elsewhere in this project (`gate`, `press`, `sandbox`, and the `daemon`
 all shipped ahead of their own gates too; see the root

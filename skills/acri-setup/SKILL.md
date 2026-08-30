@@ -53,8 +53,11 @@ from scratch — run it, then fill in the picked provider:
 acri init
 ```
 
-The `models: default:` line takes `provider/model`, e.g. `anthropic/claude-3-7-sonnet-20250219`,
-`openai/gpt-4o`, `gemini/gemini-2.0-flash`, or `ollama/qwen2.5-coder:32b` for local models.
+The `models: default:` line takes `provider/model`, e.g. `anthropic/claude-sonnet-5`,
+`openai/gpt-5.6-luna`, `gemini/gemini-2.5-flash`, or `ollama/qwen2.5-coder:32b` for local
+models. Check README.md's "Supported providers" table for the current default per
+provider before hardcoding a model string -- providers ship new models regularly and
+a stale one here is worse than none.
 
 ## 5. Verify credentials before touching any code
 
@@ -93,7 +96,7 @@ const resolved = resolve(query, corpus, 5);
 ```rust
 use acri_core::{index, resolve};
 
-let corpus = index(&existing_tools)?; // build once
+let corpus = index(existing_tools)?; // takes an owned Vec<Tool>, build once
 let resolved = resolve("what is the weather in Tokyo", &corpus, 5);
 ```
 

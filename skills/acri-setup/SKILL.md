@@ -42,7 +42,7 @@ cargo add acri-core
 Check the project's existing code/env first — an existing `OPENAI_API_KEY`,
 `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, an `openai.OpenAI(...)` call, etc. is a strong signal. If nothing
 points at one provider, ask. Do not default silently to any single provider — acri
-supports 12 providers equally (Gemini, Anthropic, OpenAI, AWS Bedrock, Cloudflare, OpenRouter, NVIDIA NIM, Grok, Ollama, vLLM, LM Studio).
+supports 15 provider wire formats equally (Gemini, Anthropic, OpenAI, AWS Bedrock, Cloudflare, Vertex Claude, Azure OpenAI, Azure Grok, OpenRouter, NVIDIA NIM, Grok, Ollama, vLLM, LM Studio).
 
 ## 4. Write `acri.yaml`
 

@@ -19,7 +19,9 @@ from .compass import resolve as _compass_resolve
 from .corpus import Corpus, Tool, index
 from .escape_hatch import FIND_MORE_TOOLS, find_more_tools
 from .ledger import Entry, Ledger
-from .port import GenerationResult, cached_call, gemini, openai_compatible
+from .port import GenerationResult, cached_call, openai_compatible
+from .port_gemini import gemini
+from .providers import PROVIDERS
 from .router import route
 
 __all__ = [
@@ -30,8 +32,6 @@ __all__ = [
     "Entry", "Ledger",
     "run",
 ]
-
-_PROVIDERS = {"openai": openai_compatible, "gemini": gemini}
 
 
 def resolve(query: str, corpus: Corpus, k: int = 5) -> list[Resolved]:
@@ -57,9 +57,9 @@ def run(
     port.cached_call, decisions.md #8c. `cheap_model` routes this one call to a cheaper
     tier -- see router.route, decisions.md #1.
     """
-    call = _PROVIDERS.get(provider)
+    call = PROVIDERS.get(provider)
     if call is None:
-        raise ValueError(f"unknown provider: {provider!r} (expected one of {sorted(_PROVIDERS)})")
+        raise ValueError(f"unknown provider: {provider!r} (expected one of {sorted(PROVIDERS)})")
     model = route(model, cheap_model)
     start = time.time()
     resolved = _compass_resolve(query, corpus, k)

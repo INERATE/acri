@@ -32,3 +32,24 @@ def to_gemini_tools(resolved: list[Resolved]) -> list[dict[str, Any]]:
          "parameters": {k: v for k, v in r.tool.parameters.items() if k != "$schema"}}
         for r in resolved
     ]
+
+
+def to_bedrock_tools(resolved: list[Resolved]) -> list[dict[str, Any]]:
+    """Shape resolved tools into Bedrock Converse API's `toolConfig.tools` array --
+    each entry wrapped in `toolSpec`, schema nested one level deeper under `inputSchema.json`
+    than either other provider's shape."""
+    return [
+        {"toolSpec": {"name": r.tool.name, "description": r.tool.description,
+                      "inputSchema": {"json": r.tool.parameters}}}
+        for r in resolved
+    ]
+
+
+def to_anthropic_tools(resolved: list[Resolved]) -> list[dict[str, Any]]:
+    """Shape resolved tools into Anthropic's Messages API `tools=[...]` array --
+    flat like OpenAI's, but the schema key is `input_schema`, not `parameters`,
+    and there's no `type: "function"`/`function` nesting wrapper."""
+    return [
+        {"name": r.tool.name, "description": r.tool.description, "input_schema": r.tool.parameters}
+        for r in resolved
+    ]

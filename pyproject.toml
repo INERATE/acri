@@ -25,10 +25,13 @@ dev = ["pytest>=8", "PyYAML>=6", "mcp>=1"]
 # Only the assay/ scripts that need them, and only if you run those scripts —
 # the acri package itself stays dependency-free. Same for yaml: only
 # acri.config/acri.cli (acri.yaml, `acri init`/`check`) need it.
-assay = ["openai>=1", "google-genai>=1", "mcp>=1"]
+assay = ["openai>=1", "google-genai>=1", "mcp>=1", "boto3>=1", "anthropic>=0.40"]  # boto3/anthropic -- bedrock/anthropic providers only
 yaml = ["PyYAML>=6"]
 # `acri up` -- connects to acri.yaml's mcp: entries. Bring your own provider
-# SDK (openai and/or google-genai) matching whatever `models:` you configure.
+# SDK matching whatever `models:` you configure -- google-genai (gemini/
+# vertex), openai (openai and every OpenAI-compatible provider: cloudflare,
+# openrouter, nvidia, grok, ollama, vllm, lmstudio), anthropic, or boto3
+# (bedrock). See acri/_client_factory.py for exactly which provider needs which.
 server = ["PyYAML>=6", "mcp>=1"]
 # `acri studio` -- decisions.md named this extra explicitly ("a separate
 # optional install"). Same PyYAML need as yaml/server today; kept as its own

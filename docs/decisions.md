@@ -449,6 +449,35 @@ reasoning that shaped this before it was built). Kept out of the paper's evaluat
 deliberately: the accuracy numbers there measure resolving a caller's *own* tools, and a
 first-party pack is a separate surface with its own versioning obligations.
 
+### One provider registry, not three that can drift
+
+`acri.providers.PROVIDERS` is the single "provider name → which wire format" table.
+Before it existed, `acri/__init__.py`'s `run()`, `assay/accuracy.py`, and `server.py` each
+kept their own copy — real duplication, found while adding a second native adapter
+(Bedrock) alongside Gemini. `acri/_client_factory.py` (production, `acri up`) and
+`assay/clients.py` (the benchmark script) both build *clients* from the same table;
+`acri/credentials.py`'s `_ENV_VARS` asserts its keys match `PROVIDERS` exactly at import
+time, so a provider added to one and forgotten in the other fails immediately, not months
+later as a confusing bug report.
+
+Every native wire format gets its own file (`port_gemini.py`, `port_bedrock.py`,
+`port_anthropic.py`) rather than accumulating in one `port.py` — the file-size cap forced
+this the first time a second native adapter joined `gemini()`, and splitting per-provider
+means it never has to be re-litigated for the next one. Everything that speaks OpenAI's
+wire format (Cloudflare Workers AI, OpenRouter, NVIDIA NIM, Grok, and any local server —
+Ollama, vLLM, LM Studio) reuses `port.openai_compatible()` completely unchanged; only the
+client's `base_url` and which env var holds the key differ, so none of them needed new
+port code, only a `_client_factory.py`/`clients.py` entry.
+
+`acri.yaml`'s `models: default:` accepts `provider/model` (e.g.
+`anthropic/claude-sonnet-4-6`) to name a provider explicitly, alongside the original bare
+model name (still inferred as gemini-or-openai, unchanged, so the acri.yaml already
+shipped in v0.5.0 keeps working). The split is on the *first* `/` only —
+`credentials.model_id_for()` — because OpenRouter/NVIDIA's own model ids are themselves
+`vendor/model`, and a naive split would truncate them. Caught by tracing where
+`config.models.cheap` actually flows: straight into an SDK call's `model=` kwarg
+(`server.py`), unstripped — a real bug this fixed, not a hypothetical one.
+
 ## Languages
 
 One, for now: **Python.**

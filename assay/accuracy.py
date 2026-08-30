@@ -11,14 +11,13 @@ the model sees, so a cache-enabled arm cannot score differently from naive
 on *accuracy* — it's a cost question, and docs/decisions.md already answers
 the cost question with arithmetic, not a benchmark.
 
-Run with a key set:
-    OPENAI_API_KEY=... python -m assay.accuracy --provider openai
+Run with a key set (every provider's env vars and an example: README.md):
     GEMINI_API_KEY=... python -m assay.accuracy --provider gemini
-    GOOGLE_APPLICATION_CREDENTIALS=... GOOGLE_CLOUD_PROJECT=... python -m assay.accuracy --provider vertex
 
-"vertex" reuses port.gemini() unchanged -- same wire format as the Developer
-API, only the auth differs (API key vs. ADC), which lives entirely in
-clients.py. Not a different model for comparison purposes, same weights.
+Every provider dispatches through acri.providers.PROVIDERS -- the same table
+`acri up` uses, not a second copy. A provider with no safe default model
+(cloudflare, openrouter, nvidia, grok, ollama, vllm, lmstudio -- acri.providers
+has no single "the" model for any of them) needs --model.
 """
 from __future__ import annotations
 
@@ -27,16 +26,20 @@ import time
 
 from acri.compass import Resolved, resolve
 from acri.corpus import index
+from acri.providers import PROVIDERS
 
 from .clients import CLIENTS
 from .fixtures import load_gold, load_tools
 from .report import print_accuracy_report
 
+_NO_DEFAULT_MODEL = {"cloudflare", "openrouter", "nvidia", "grok", "ollama", "vllm", "lmstudio"}
 
-def run(provider: str, k: int = 5) -> None:
-    from acri.port import gemini, openai_compatible
 
-    call = {"openai": openai_compatible, "gemini": gemini, "vertex": gemini}[provider]
+def run(provider: str, k: int = 5, model: str | None = None) -> None:
+    call = PROVIDERS[provider]
+    if provider in _NO_DEFAULT_MODEL and not model:
+        raise SystemExit(f"{provider} needs --model -- it has no single default (e.g. --model @cf/meta/llama-3.3-70b-instruct)")
+    call_kwargs = {"model": model} if model else {}
     client = CLIENTS[provider]()
 
     tools = load_tools()
@@ -48,11 +51,11 @@ def run(provider: str, k: int = 5) -> None:
     latency_ms = {"naive": [], "acri": []}
     for g in gold:
         start = time.perf_counter()
-        naive_reply = call(client, g.query, everything)
+        naive_reply = call(client, g.query, everything, **call_kwargs)
         latency_ms["naive"].append((time.perf_counter() - start) * 1000)
 
         start = time.perf_counter()
-        acri_reply = call(client, g.query, resolve(g.query, corpus, k=k))
+        acri_reply = call(client, g.query, resolve(g.query, corpus, k=k), **call_kwargs)
         latency_ms["acri"].append((time.perf_counter() - start) * 1000)
 
         if naive_reply.tool_calls and naive_reply.tool_calls[0]["name"] == g.tool:
@@ -67,8 +70,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Compare naive vs. acri tool-selection accuracy against a live model.")
     parser.add_argument("--provider", choices=sorted(CLIENTS), required=True)
     parser.add_argument("--k", type=int, default=5)
+    parser.add_argument("--model", default=None, help="override the provider's default model")
     args = parser.parse_args()
-    run(args.provider, args.k)
+    run(args.provider, args.k, args.model)
 
 
 if __name__ == "__main__":

@@ -46,7 +46,7 @@ acri
 │             indexed into one searchable body
 ├── compass   the resolver — intent in, the right k tools out           ← the core
 ├── router    the tier picker — cheap/strong model, chosen once, before generating
-├── port      provider adapters — gemini · openai-compatible (OpenAI, vLLM, Ollama, ...)
+├── port      provider adapters — see "Supported providers" below
 ├── config    acri.yaml — declares capabilities and limits, never control flow
 ├── daemon    the OpenAI-shaped request handler — acri.run(), nothing more
 ├── server    `acri up` — binds it: stdlib http.server, SSE, localhost by default
@@ -61,6 +61,33 @@ examples/     end-to-end scripts against a real MCP server — not part of the i
 rust/         minimal Rust port of corpus + compass, v0.1 scope only
 typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only
 ```
+
+### Supported providers
+
+`models: default:` is a bare model name for the two providers acri has always inferred
+this way, or `provider/model` for any other one — the prefix names the provider
+explicitly, the rest is the literal model id (unaffected even if that id has its own
+slash, e.g. OpenRouter's `vendor/model` form). One provider per `acri up` process.
+
+| Provider | acri.yaml | Needs |
+|---|---|---|
+| Gemini (Developer API) | `default: gemini-2.5-flash` | `GEMINI_API_KEY` |
+| Google Vertex AI | `default: vertex/gemini-2.5-flash` | `GOOGLE_APPLICATION_CREDENTIALS`, `GOOGLE_CLOUD_PROJECT` |
+| OpenAI | `default: gpt-4o-mini` | `OPENAI_API_KEY` |
+| Anthropic (direct) | `default: anthropic/claude-sonnet-4-6` | `ANTHROPIC_API_KEY` |
+| AWS Bedrock | `default: bedrock/us.anthropic.claude-sonnet-4-6` | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` (boto3's own chain) |
+| Cloudflare Workers AI | `default: cloudflare/@cf/meta/llama-3.3-70b-instruct` | `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` |
+| OpenRouter | `default: openrouter/meta-llama/llama-3.3-70b-instruct` | `OPENROUTER_API_KEY` |
+| NVIDIA NIM | `default: nvidia/meta/llama-3.3-70b-instruct` | `NVIDIA_API_KEY` |
+| Grok (xAI) | `default: grok/grok-4` | `XAI_API_KEY` |
+| Ollama (local) | `default: ollama/qwen2.5-coder:32b` | nothing — `OLLAMA_BASE_URL` optional, defaults to `localhost:11434` |
+| vLLM (local) | `default: vllm/your-model` | nothing — `VLLM_BASE_URL` optional, defaults to `localhost:8000` |
+| LM Studio (local) | `default: lmstudio/your-model` | nothing — `LMSTUDIO_BASE_URL` optional, defaults to `localhost:1234` |
+
+Cloudflare/OpenRouter/NVIDIA/Grok/Ollama/vLLM/LM Studio all speak OpenAI's wire format,
+so they reuse `port.openai_compatible()` unchanged — only the endpoint and which env var
+holds the key differ ([`acri/_client_factory.py`](acri/_client_factory.py)). `acri check`
+names exactly which of the above is missing before `acri up` ever tries to connect.
 
 ## Status
 

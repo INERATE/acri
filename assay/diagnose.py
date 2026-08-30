@@ -11,15 +11,14 @@ import argparse
 
 from acri.compass import resolve
 from acri.corpus import index
+from acri.providers import PROVIDERS
 
 from .clients import CLIENTS
 from .fixtures import load_gold, load_tools
 
 
 def run(provider: str, k: int = 5) -> None:
-    from acri.port import gemini, openai_compatible
-
-    call = {"openai": openai_compatible, "gemini": gemini, "vertex": gemini}[provider]
+    call = PROVIDERS[provider]
     client = CLIENTS[provider]()
 
     corpus = index(load_tools())

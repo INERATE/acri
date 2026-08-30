@@ -1,9 +1,5 @@
 """server — `acri up`. Binds an OpenAI-compatible /v1/chat/completions endpoint.
 
-Built at the maintainer's explicit request, ahead of decisions.md's own gate
-("built after users want it, not before") -- on record in the commit
-message, not silently assumed.
-
 stdlib http.server only: no FastAPI/uvicorn. SSE is wire-level -- one
 blocking acri.run() call, chunked as a single event, not a true stream
 (port.py doesn't support that yet).
@@ -12,30 +8,20 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
+from ._client_factory import client_for
 from .builtin import resolve_builtin
 from .config import Config, from_yaml
-from .credentials import missing_env_vars, provider_for
+from .credentials import missing_env_vars, model_id_for, provider_for
 from .corpus import index
 from .daemon import RedactingLedger, default_ledger, handle_chat_completion
 from .mcp_connect import connect_all
 from .studio_data import write_corpus_snapshot
 
 
-def _client_for(provider: str) -> Any:
-    if provider == "gemini":
-        from google import genai
-
-        return genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    import openai
-
-    return openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-
-
-def _make_handler(config: Config, corpus: Any, client: Any, provider: str, ledger: Any) -> type[BaseHTTPRequestHandler]:
+def _make_handler(config: Config, corpus: Any, client: Any, provider: str, cheap_model: str | None, ledger: Any) -> type[BaseHTTPRequestHandler]:
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:
             if self.path != "/v1/chat/completions":
@@ -46,7 +32,7 @@ def _make_handler(config: Config, corpus: Any, client: Any, provider: str, ledge
             try:
                 response = handle_chat_completion(
                     request, corpus, client, provider,
-                    k=config.k, cheap_model=config.models.cheap, ledger=ledger,
+                    k=config.k, cheap_model=cheap_model, ledger=ledger,
                 )
             except Exception as exc:  # a bad request shouldn't kill the process
                 self.send_error(500, str(exc))
@@ -78,10 +64,11 @@ def serve(config_path: str, host: str = "127.0.0.1", port: int = 8080, log_conve
     corpus = index(tools)
     write_corpus_snapshot(corpus)  # lets studio show unresolved tools too, without connecting itself
     provider = provider_for(config.models.default or "gemini")
-    client = _client_for(provider)
+    client = client_for(provider)
+    cheap_model = model_id_for(config.models.cheap) if config.models.cheap else None  # strips "provider/" if present
     ledger = default_ledger() if log_conversations else RedactingLedger(default_ledger())
 
-    handler = _make_handler(config, corpus, client, provider, ledger)
+    handler = _make_handler(config, corpus, client, provider, cheap_model, ledger)
     httpd = ThreadingHTTPServer((host, port), handler)
     print(f"acri up: {len(corpus)} tools, {provider}, http://{host}:{port}/v1/chat/completions")
     try:

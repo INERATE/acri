@@ -8,6 +8,9 @@ version: 1
 
 models:
   default: gemini-2.5-flash
+  # Any other provider: prefix the model with its name, e.g.
+  # "anthropic/claude-sonnet-4-6" or "ollama/qwen2.5-coder:32b" -- full list
+  # and a config example for each: README.md "Supported providers".
   # cheap: a stateless, prefix-free tier only -- classification, extraction,
   # summarizing a tool result. See docs/architecture.md #4.4. Optional.
   # cheap: gemini-2.5-flash-lite

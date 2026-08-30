@@ -1,6 +1,6 @@
 from acri.compass import resolve
 from acri.corpus import Tool, index
-from acri.schemas import to_gemini_tools, to_openai_tools
+from acri.schemas import to_anthropic_tools, to_bedrock_tools, to_gemini_tools, to_openai_tools
 
 
 def _resolved_weather_tool():
@@ -30,6 +30,24 @@ def test_to_gemini_tools_shapes_the_schema():
         "name": "get_weather",
         "description": "Get the current weather for a city",
         "parameters": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
+    }]
+
+
+def test_to_bedrock_tools_shapes_the_schema():
+    tools = to_bedrock_tools(_resolved_weather_tool())
+    assert tools == [{"toolSpec": {
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "inputSchema": {"json": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}},
+    }}]
+
+
+def test_to_anthropic_tools_shapes_the_schema():
+    tools = to_anthropic_tools(_resolved_weather_tool())
+    assert tools == [{
+        "name": "get_weather",
+        "description": "Get the current weather for a city",
+        "input_schema": {"type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]},
     }]
 
 

@@ -24,7 +24,7 @@ def test_serves_an_sse_response_over_a_real_socket():
         return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content="hello", tool_calls=None))])
 
     corpus = index([Tool(name="noop", description="does nothing")])
-    handler_cls = _make_handler(Config(version=1), corpus, _client(create), "openai", ledger=None)
+    handler_cls = _make_handler(Config(version=1), corpus, _client(create), "openai", None, ledger=None)
     httpd = _running_server(handler_cls)
     try:
         conn = HTTPConnection("127.0.0.1", httpd.server_address[1])
@@ -45,7 +45,7 @@ def test_serves_an_sse_response_over_a_real_socket():
 
 def test_returns_404_for_an_unknown_path():
     corpus = index([Tool(name="noop", description="does nothing")])
-    handler_cls = _make_handler(Config(version=1), corpus, _client(lambda **kw: None), "openai", ledger=None)
+    handler_cls = _make_handler(Config(version=1), corpus, _client(lambda **kw: None), "openai", None, ledger=None)
     httpd = _running_server(handler_cls)
     try:
         conn = HTTPConnection("127.0.0.1", httpd.server_address[1])

@@ -21,6 +21,7 @@ from .escape_hatch import FIND_MORE_TOOLS, find_more_tools
 from .ledger import Entry, Ledger
 from .port import GenerationResult, cached_call, openai_compatible
 from .port_gemini import gemini
+from .press import Pressed, press, recover
 from .providers import PROVIDERS
 from .router import route
 
@@ -29,6 +30,7 @@ __all__ = [
     "Resolved", "resolve",
     "FIND_MORE_TOOLS", "find_more_tools",
     "GenerationResult", "gemini", "openai_compatible",
+    "Pressed", "press", "recover",
     "Entry", "Ledger",
     "run",
 ]

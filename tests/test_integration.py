@@ -87,3 +87,13 @@ def test_run_always_offers_find_more_tools_but_the_ledger_stays_clean():
     ledger = Ledger()
     acri.run("weather", corpus, client, provider="openai", k=1, ledger=ledger)
     assert ledger.entries[0].offered == ["get_weather"]
+
+
+def test_press_and_recover_are_reachable_from_the_top_level_package():
+    """The multi-phase pattern (resolve+run, press the result, feed the digest into a
+    second resolve+run) needs acri.press() to actually exist -- not just acri.press.press()."""
+    store: dict = {}
+    big = list(range(2000))  # forces compression -- well past press()'s 2000-char default
+    pressed = acri.press(big, store)
+    assert pressed.handle is not None
+    assert acri.recover(pressed.handle, store) == big

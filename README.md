@@ -78,7 +78,7 @@ acri
 
 examples/     end-to-end scripts against a real MCP server — not part of the installed package
 rust/         minimal Rust port of corpus + compass, v0.1 scope only — cargo add acri-core
-typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only — npm install acri-core
+typescript/   minimal TypeScript port of corpus + compass, v0.1 scope only — npm install @inerate/acri-core
 ```
 
 Both published ahead of their own stated gate in `docs/decisions.md` — see each directory's
@@ -127,6 +127,9 @@ exists too, ahead of its own gate — see the v1.0 roadmap row for what that mea
 ```bash
 pip install pyacri
 ```
+
+**Packages:** [`pyacri`](https://pypi.org/project/pyacri/) · [`acri-core`](https://crates.io/crates/acri-core) (crates.io) · [`@inerate/acri-core`](https://www.npmjs.com/package/@inerate/acri-core) (npm — live from the next release; the old unscoped `acri-core` is deprecated).
+The crates.io and npm ports version independently at `v0.1.x` — same `corpus` + `compass` scope as their directories' READMEs describe, not the Python package's version.
 
 Distribution name is `pyacri`, not `acri` — PyPI blocks names within edit-distance-1 of an existing
 package (`acris`, `acr`, and `acre` already exist, all unrelated). `import acri` and the `acri` command

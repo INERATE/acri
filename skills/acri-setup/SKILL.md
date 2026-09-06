@@ -31,7 +31,7 @@ pip install pyacri
 pip install "pyacri[yaml]"       # for acri.yaml config and CLI tools
 
 # TypeScript / Node.js (npm)
-npm install acri-core
+npm install @inerate/acri-core
 
 # Rust (crates.io)
 cargo add acri-core
@@ -83,9 +83,9 @@ resolved = acri.resolve(query, corpus, k=5)
 # hand `resolved` to whatever already calls the model, instead of the full tool list
 ```
 
-### TypeScript / Node.js Integration (`npm install acri-core`):
+### TypeScript / Node.js Integration (`npm install @inerate/acri-core`):
 ```typescript
-import { index, resolve } from 'acri-core';
+import { index, resolve } from '@inerate/acri-core';
 
 const corpus = index(existingTools); // build once at startup
 const resolved = resolve(query, corpus, 5);

@@ -1,5 +1,5 @@
 {
-  "name": "acri-core",
+  "name": "@inerate/acri-core",
   "version": "0.1.0",
   "type": "module",
   "description": "Minimal TypeScript port of acri capability resolver (corpus + compass)",
@@ -17,8 +17,12 @@
     "@types/node": "^22.0.0"
   },
   "license": "MIT",
+  "homepage": "https://forge.inerate.com/acri",
   "repository": {
     "type": "git",
-    "url": "https://github.com/INERATE/acri"
+    "url": "git+https://github.com/INERATE/acri.git"
+  },
+  "bugs": {
+    "url": "https://github.com/INERATE/acri/issues"
   }
 }

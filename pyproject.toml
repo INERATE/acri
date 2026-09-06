@@ -48,7 +48,8 @@ release = ["build>=1", "twine>=5"]
 acri = "acri.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/INERATE/acri"
+Homepage = "https://forge.inerate.com/acri"
+Documentation = "https://docs.inerate.com/acri/"
 Repository = "https://github.com/INERATE/acri"
 Issues = "https://github.com/INERATE/acri/issues"
 

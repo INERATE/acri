@@ -74,7 +74,7 @@ jobs:
         working-directory: typescript
         run: |
           version=$(node -p "require('./package.json').version")
-          if npm view "acri-core@$version" version >/dev/null 2>&1; then
+          if npm view "@inerate/acri-core@$version" version >/dev/null 2>&1; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"

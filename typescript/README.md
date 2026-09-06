@@ -1,10 +1,14 @@
-# acri-core (TypeScript)
+# @inerate/acri-core (TypeScript)
 
 A minimal TypeScript port of acri's core resolver: `Tool`/`Corpus`/`index()` and
 BM25 `resolve()` — the v0.1 scope `docs/decisions.md` (the Python repo's own
 design doc) calls "a complete product on its own." Nothing else is ported: no
 port/daemon/server/cli/config/gate/press/sandbox/ledger/router/adapters/
 escape-hatch.
+
+Install: `npm install @inerate/acri-core` —
+[npmjs.com/package/@inerate/acri-core](https://www.npmjs.com/package/@inerate/acri-core).
+Versions independently at `0.1.x`, not tracking the Python package.
 
 Mirrors the Python implementation's behavior directly, not just its shape:
 same BM25 constants (`K1=1.5`, `B=0.75`), same tokenizer (lowercase, strip

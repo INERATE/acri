@@ -3,6 +3,21 @@
 Prior releases (v0.3.0–v0.4.3) are tracked in git tags and their release commit
 messages, not backfilled here. This file starts at v0.5.0.
 
+## [Unreleased]
+
+### Changed
+- Package `Homepage` now points at `https://forge.inerate.com/acri` (was the GitHub
+  repo) across `pyproject.toml`, `rust/Cargo.toml`, and `typescript/package.json`;
+  npm/PyPI pick it up on their next publish, the already-published crates.io 0.1.0
+  keeps the old URL until a version bump.
+- npm package renamed `acri-core` → `@inerate/acri-core` so it lives under the
+  `inerate` org scope instead of a personal account. An unscoped npm package's
+  direct owner is fixed at creation and only npm Support can change it; a scoped
+  package is owned by whoever owns the scope, so scoping is the only clean way to
+  put it under the org. The old unscoped `acri-core@0.1.0` stays on the registry
+  (too old to unpublish without support) and should be `npm deprecate`d pointing
+  at the new name. crates.io/PyPI names are unchanged — neither has this problem.
+
 ## [0.7.0]
  
 ### Added

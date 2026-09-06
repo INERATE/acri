@@ -5,6 +5,10 @@ BM25 `resolve()`, plus their two small dependencies (tokenize, query-alias expan
 Nothing else — no `port`, `daemon`, `server`, `cli`, `config`, `gate`, `press`,
 `sandbox`, `ledger`, `router`, or `escape_hatch`. Zero external dependencies.
 
+Install: `cargo add acri-core` —
+[crates.io/crates/acri-core](https://crates.io/crates/acri-core).
+Versions independently at `0.1.x`, not tracking the Python package.
+
 ## This ships ahead of its own gate — stated plainly, not glossed over
 
 `docs/decisions.md` (the Python project's own design doc) is explicit about when a

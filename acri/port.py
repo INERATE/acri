@@ -40,6 +40,9 @@ def cached_call(call: Any, cache: dict[Any, GenerationResult] | None, key: Any, 
 
     docs/decisions.md #8c: exact-match only, no similarity. `cache` is a plain dict the
     caller owns -- pass None (the default via run()) to disable it entirely.
+    Use a separate cache per client, tenant and task. Clear it when credentials,
+    endpoint configuration or external context changes. Results are returned by
+    reference, so callers must not mutate cached replies.
     """
     if cache is not None and key in cache:
         return cache[key]
@@ -47,5 +50,4 @@ def cached_call(call: Any, cache: dict[Any, GenerationResult] | None, key: Any, 
     if cache is not None:
         cache[key] = result
     return result
-
 

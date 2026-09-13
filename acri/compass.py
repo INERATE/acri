@@ -58,7 +58,9 @@ def resolve(query: str, corpus: Corpus, k: int = 5) -> list[Resolved]:
     which the caller should handle via `port`'s no-tools path, not treat as
     an error.
     """
-    if len(corpus) == 0:
+    if not isinstance(k, int) or isinstance(k, bool) or k < 0:
+        raise ValueError("k must be a non-negative integer")
+    if len(corpus) == 0 or k == 0:
         return []
     query_tokens = _expand(_tokenize(query))
     raw = [bm25(query_tokens, corpus, i) for i in range(len(corpus))]

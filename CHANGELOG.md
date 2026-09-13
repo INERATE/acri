@@ -3,7 +3,22 @@
 Prior releases (v0.3.0–v0.4.3) are tracked in git tags and their release commit
 messages, not backfilled here. This file starts at v0.5.0.
 
-## [Unreleased]
+## [0.7.1] - 2026-09-13
+
+### Fixed
+- Default redacted logging now forwards corpus size instead of failing after generation.
+- Response cache identity includes offered descriptions and schemas, preventing stale
+  responses when a tool schema changes. Caches remain caller-owned and task-scoped.
+- `acri up` uses the configured model when a request does not name one.
+- Python and TypeScript reject negative and non-integer retrieval limits explicitly.
+
+### Documentation and packages
+- Correct unsupported README guarantees and distinguish stateless calls from planned
+  session behavior. Add a product continuation plan and evidence review.
+- TypeScript `0.1.1` includes retrieval-limit validation. Rust `0.1.1` refreshes
+  package homepage metadata only; its resolver behavior is unchanged.
+
+## Package metadata carried into this release
 
 ### Changed
 - Package `Homepage` now points at `https://forge.inerate.com/acri` (was the GitHub

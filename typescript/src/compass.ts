@@ -38,7 +38,8 @@ export function bm25(queryTokens: string[], corpus: Corpus, docIdx: number): num
 // Tools that score zero (no shared term with the query) are dropped rather
 // than padded in -- an empty result means "nothing in this corpus matches".
 export function resolve(query: string, corpus: Corpus, k = 5): Resolved[] {
-  if (corpus.tools.length === 0) return [];
+  if (!Number.isSafeInteger(k) || k < 0) throw new RangeError("k must be a non-negative integer");
+  if (corpus.tools.length === 0 || k === 0) return [];
   const queryTokens = expand(tokenize(query));
   const raw = corpus.tools.map((_, i) => bm25(queryTokens, corpus, i));
   const top = Math.max(...raw);

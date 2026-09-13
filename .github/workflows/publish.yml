@@ -12,7 +12,13 @@ permissions:
   id-token: write
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   publish-pypi:
+    needs: verify
     name: Publish Python (PyPI)
     runs-on: ubuntu-latest
     environment: pypi
@@ -28,6 +34,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
 
   publish-crates:
+    needs: verify
     name: Publish Rust (crates.io)
     runs-on: ubuntu-latest
     permissions:
@@ -58,6 +65,7 @@ jobs:
         run: cargo publish
 
   publish-npm:
+    needs: verify
     name: Publish TypeScript (npm)
     runs-on: ubuntu-latest
     permissions:
@@ -85,6 +93,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npm ci || npm install
+          npm ci
           npm run build
           npm publish --access public --provenance

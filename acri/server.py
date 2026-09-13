@@ -30,6 +30,8 @@ def _make_handler(config: Config, corpus: Any, client: Any, provider: str, cheap
             length = int(self.headers.get("Content-Length", 0))
             request = json.loads(self.rfile.read(length) or b"{}")
             try:
+                if config.models.default:
+                    request.setdefault("model", model_id_for(config.models.default))
                 response = handle_chat_completion(
                     request, corpus, client, provider,
                     k=config.k, cheap_model=cheap_model, ledger=ledger,

@@ -38,8 +38,8 @@ class RedactingLedger:
     def __init__(self, ledger: Ledger) -> None:
         self._ledger = ledger
 
-    def record(self, query: str, offered: Any, selected: list[str], latency_ms: float, cost_usd: float | None = None) -> Any:
-        return self._ledger.record("<redacted>", offered, selected, latency_ms, cost_usd)
+    def record(self, query: str, offered: Any, selected: list[str], latency_ms: float, cost_usd: float | None = None, corpus_size: int | None = None) -> Any:
+        return self._ledger.record("<redacted>", offered, selected, latency_ms, cost_usd, corpus_size)
 
 
 def handle_chat_completion(

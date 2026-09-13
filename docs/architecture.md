@@ -1,7 +1,10 @@
 # acri architecture
 
-**Status:** design. No code yet. This document is an argument, and it is meant to be
-argued with — see the `design:` issue template.
+**Status:** historical design with partially implemented mechanisms. The current
+`run()` resolves each call and returns model output; it does not maintain a session,
+execute tools or enforce the resolve-once policy below. Provider adapters send
+resolved schemas rather than delegating retrieval to native provider tool search.
+Use [PRODUCT_PLAN.md](PRODUCT_PLAN.md) for verified gaps and active work.
 
 ---
 

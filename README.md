@@ -40,22 +40,30 @@ LLM API, and decides which tools the model gets to see this turn.
 
 ## What you can build with acri
 
-acri is the foundation layer for high-scale agentic architectures. Whether you are building with LangGraph, n8n, AutoGen, or custom agent loops, acri gives your models sub-millisecond capability resolution without context bloat or cache thrashing.
+Use `acri.resolve()` inside your existing agent loop to narrow the tools offered
+for a task. The caller owns conversation state, tool execution, permissions and
+recovery. `acri.run()` is a stateless convenience call: it resolves on every call,
+asks the provider to generate, and returns the model's requested tool calls.
 
-### 1. 🤖 Massive Multi-Agent Swarms & Subagent Networks
-Connect hundreds of specialized tools across dozens of agents. Instead of overloading each subagent with a monolithic tool schema, acri dynamically provisions the exact 3–5 tools needed per subtask in **0.18ms**, preventing selection errors and hallucinated parameters.
+- **Large tool catalogs:** retrieve a candidate set before sending schemas to a model.
+  See `assay/recall.py` and `assay/scale.py` for the measured scope and failures.
+- **Multi-agent and artifact integrations:** let each agent resolve its own tools;
+  use caller-provided tools to create and validate artifacts. ACRI does not execute
+  an autonomous workflow or validate generated artifacts itself.
+- **Compact handoffs:** `acri.press()` returns a digest and a handle to the full
+  payload in a caller-owned store. Retain that store for `acri.recover()`.
+- **Provider prompt caching:** callers can retain an offered toolset and a stable
+  conversation prefix. Actual cache hits depend on provider configuration, token
+  thresholds and cache lifetime; verify usage fields. See
+  [provider caching documentation](https://platform.claude.com/docs/en/build-with-claude/prompt-caching).
 
-### 2. 🎨 Live Artifact & Dynamic UI Generation Agents
-Build interactive agents that generate live UI components, charts, SVGs, and documents. acri dynamically resolves design, data visualization, and rendering tools on demand, allowing agents to inject live interactive artifacts without cluttering the main conversation context.
+Retrieval is not an authorization boundary and cannot guarantee correct tool
+names, arguments or outcomes. Apply permissions and argument validation where
+calls execute. Response caching is opt-in: use a separate cache per client,
+tenant and task, clear it after configuration or external-context changes, and
+never mutate cached replies. It is distinct from provider prompt caching.
 
-### 3. 🎬 Multi-Modal Pipelines with Compressed Handoffs
-Ingest raw audio, images, and documents across multi-stage pipelines. Resolve fast multimodal tools for analysis (e.g. Gemini Flash), compress intermediate results into clean handles with `acri.press()`, and hand off the compact digest to deep reasoning models (e.g. Claude Sonnet) with 100% prompt cache stability. Full worked example in [`docs/cookbook.md`](docs/cookbook.md).
-
-### 4. ⚡ Autonomous 24/7 Cloud SRE & Operations
-Connect 300+ enterprise cloud and database APIs (Kubernetes, AWS, Postgres, GitHub, Datadog). When an incident fires, acri isolates the exact diagnostic tools needed for troubleshooting, ensuring the agent never accidentally accesses destructive or unrelated operational tools.
-
-### 5. 💰 Zero-Token-Waste Prompt Caching Architectures
-In long-running multi-turn sessions, acri resolves tools once per task and locks the schema prefix. This guarantees your application earns the **90% provider prompt-cache discount** ($r < 1/10$) across thousands of conversational turns — confirmed directly against [Anthropic's own pricing page](https://platform.claude.com/docs/en/build-with-claude/prompt-caching) ("cache read tokens are 0.1x the base input tokens price").
+Current product work and verified gaps: [product plan](docs/PRODUCT_PLAN.md).
 
 ## The system
 

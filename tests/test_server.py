@@ -4,7 +4,7 @@ from http.client import HTTPConnection
 from http.server import ThreadingHTTPServer
 from types import SimpleNamespace
 
-from acri.config import Config
+from acri.config import Config, ModelsConfig
 from acri.corpus import Tool, index
 from acri.server import _make_handler
 
@@ -53,3 +53,22 @@ def test_returns_404_for_an_unknown_path():
         assert conn.getresponse().status == 404
     finally:
         httpd.shutdown()
+
+
+def test_configured_default_model_reaches_the_provider():
+    def create(**kwargs):
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(
+            content=kwargs["model"], tool_calls=None))])
+
+    config = Config(version=1, models=ModelsConfig(default="openrouter/vendor/chosen-model"))
+    handler = _make_handler(config, index([Tool("noop", "noop")]), _client(create), "openrouter", None, None)
+    httpd = _running_server(handler)
+    try:
+        conn = HTTPConnection("127.0.0.1", httpd.server_address[1])
+        conn.request("POST", "/v1/chat/completions", body='{"messages": []}')
+        response = conn.getresponse()
+        assert response.status == 200
+        assert 'vendor/chosen-model' in response.read().decode()
+    finally:
+        httpd.shutdown()
+        httpd.server_close()

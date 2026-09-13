@@ -10,6 +10,7 @@ doesn't get to bring it back through the filename.
 """
 from __future__ import annotations
 
+import json
 import time
 from typing import Any
 
@@ -24,6 +25,7 @@ from .port_gemini import gemini
 from .press import Pressed, press, recover
 from .providers import PROVIDERS
 from .router import route
+from .schemas import to_openai_tools
 
 __all__ = [
     "Tool", "Corpus", "index", "from_callables", "from_mcp_tools",
@@ -70,7 +72,8 @@ def run(
     offered = [*resolved, Resolved(tool=FIND_MORE_TOOLS, score=0.0)]
     sent = query if prompt is None else prompt
     effective_cache = cache if prompt is None else None
-    key = (provider, model, query, tuple(r.tool.name for r in resolved))
+    # Cache ownership defines the client/tenant/task boundary; schemas may change.
+    key = (provider, model, query, json.dumps(to_openai_tools(offered), sort_keys=True)) if effective_cache is not None else None
     kwargs = {"model": model} if model else {}
     result = cached_call(call, effective_cache, key, client, sent, offered, **kwargs)
     if ledger is not None:

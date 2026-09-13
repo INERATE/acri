@@ -1,9 +1,29 @@
 name: ci
 on:
+  workflow_call:
   push: { branches: [main] }
   pull_request:
 
 jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - run: npm ci
+        working-directory: typescript
+      - run: npm test
+        working-directory: typescript
+
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test
+        working-directory: rust
+
   test:
     name: pytest
     runs-on: ubuntu-latest

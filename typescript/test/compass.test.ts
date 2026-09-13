@@ -43,3 +43,10 @@ test("resolve returns nothing for pure noise", () => {
 test("resolve respects k", () => {
   assert.equal(resolve("pull request", corpus(), 1).length, 1);
 });
+
+test("resolve rejects invalid limits", () => {
+  for (const k of [-1, 1.5, NaN, Infinity]) {
+    assert.throws(() => resolve("pull request", corpus(), k), /non-negative integer/);
+  }
+  assert.deepEqual(resolve("pull request", corpus(), 0), []);
+});

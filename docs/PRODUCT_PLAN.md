@@ -16,15 +16,29 @@ Do not add orchestration or caching merely to enlarge the feature list.
 
 - Base commit inspected: `f708f6e`, branch `main`; initially clean working tree.
 - Read `git status --short` and this file before resuming. Preserve existing edits.
-- Release candidate: Python `0.7.1`, TypeScript `0.1.1`, Rust `0.1.1`.
+- Release commit: `e3ac90e`; GitHub release `v0.7.1` is published.
+- Registry-verified live: Python `0.7.1`, Rust `0.1.1`; npm remains `0.1.0`.
+  TypeScript `0.1.1` is built and tested but publishing needs npm authentication.
 - Fixed and reproduced before editing: redacted logging rejected `corpus_size`;
   schema changes reused stale response-cache entries; server ignored configured
   default model; Python/TypeScript accepted invalid retrieval limits.
 - Latest local checks: 139 Python tests, 6 TypeScript tests, 9 Rust tests pass.
   npm pack and Cargo publish dry-runs pass. Python wheel/sdist build and twine checks pass.
 - CI now runs all three language suites; registry publishing depends on this CI.
-- No versions published yet in this session. Previously live: Python `0.7.0`,
-  TypeScript and Rust `0.1.0`. Verify workflows and registries before updating this line.
+- GitHub CI run `34758440735` passed on the release commit. Publish run
+  `34758478580` passed all verification jobs, PyPI and crates.io, but npm failed
+  with `EOTP` (two-factor authentication required). Local `npm whoami` returns
+  E401 and no connected browser is available. User was asked to authenticate locally;
+  do not request secrets in chat. After credentials are repaired, rerun only the
+  failed npm job (`gh run rerun 34758478580 --failed --repo INERATE/acri`) if the
+  GitHub publishing credential was repaired, or publish the tested package locally
+  after authenticated login. Do not rerun the successful immutable uploads.
+- Installing `pyacri==0.7.1` from the registry passed a resolver smoke test. A stale
+  latest-version JSON response initially showed 0.7.0; exact-version and refreshed
+  registry responses both confirmed 0.7.1.
+- Next product task after publishing: regression-first fixes for recovery integrity
+  and HTTP/provider boundaries below, then measured catalog scaling. Do not claim
+  the full roadmap or enterprise readiness is complete.
 - PDF and Crawl4AI evidence are outside the package at `E:/Framework/acri-audit`:
   `paper.pdf`, `paper.txt`, `site.html`, `acri-crawl.md`, `toolret-crawl.md`.
   Crawl4AI ran successfully in an isolated uv environment; no dependency added here.
@@ -44,7 +58,7 @@ Do not add orchestration or caching merely to enlarge the feature list.
 - [x] Remove README guarantees about hallucination prevention, destructive access,
   automatic task freezing and guaranteed provider cache discounts.
 - [x] Save paper/code discrepancy review with primary-source links.
-- [ ] Run Python suite, TypeScript tests, Rust tests, packaging and existing CI checks.
+- [x] Run Python suite, TypeScript tests, Rust tests, packaging and existing CI checks.
 - [ ] Patch-version only affected packages; publish through existing GitHub workflow
   after checks pass; verify registry artifact versions and installability afterward.
 

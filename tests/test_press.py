@@ -33,3 +33,12 @@ def test_large_non_uniform_result_still_gets_a_handle():
     pressed = press(value, store, max_chars=50)
     assert pressed.handle is not None
     assert recover(pressed.handle, store) == value
+
+
+def test_press_handles_do_not_collide_after_store_entries_are_removed():
+    store = {}
+    first = press({"value": "a" * 100}, store, max_chars=10)
+    del store[first.handle]
+    second = press({"value": "b" * 100}, store, max_chars=10)
+    assert second.handle != first.handle
+    assert recover(second.handle, store)["value"] == "b" * 100

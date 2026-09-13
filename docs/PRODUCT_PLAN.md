@@ -59,7 +59,7 @@ Do not add orchestration or caching merely to enlarge the feature list.
   automatic task freezing and guaranteed provider cache discounts.
 - [x] Save paper/code discrepancy review with primary-source links.
 - [x] Run Python suite, TypeScript tests, Rust tests, packaging and existing CI checks.
-- [ ] Patch-version only affected packages; publish through existing GitHub workflow
+- [x] Patch-version only affected packages; publish through existing GitHub workflow
   after checks pass; verify registry artifact versions and installability afterward.
 
 ### 2. Complete code audit
@@ -158,8 +158,8 @@ Inspected: `server`, `_openai_wire`, `adapters`, `builtin`, `press`, `sandbox`,
 `providers`, `studio`, `studio_data`, and their relevant tests. CLI/wizard/setup
 and the studio HTML still need a complete review. Reading is not verification.
 
-- `press()` uses store length as a handle; removing an older entry can make a new
-  write overwrite an existing payload. Add a deletion/reinsertion recovery test.
+- [x] `press()` handle collision after deletion fixed with a process-unique counter;
+  deletion/reinsertion regression test added.
 - Builtin `press.digest` discards its local recovery store and returns only text.
   Its promise of recoverability is false. Design caller-owned recovery explicitly.
 - Tabular digest joins unescaped commas/newlines and can exceed `max_chars`.

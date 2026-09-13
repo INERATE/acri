@@ -15,6 +15,7 @@ directly before writing this instead of depending on it.
 from __future__ import annotations
 
 import json
+from itertools import count
 from dataclasses import dataclass
 from typing import Any
 
@@ -24,6 +25,9 @@ class Pressed:
     digest: str
     handle: str | None  # None means nothing was dropped -- digest is the whole result
     full_chars: int
+
+
+_HANDLES = count()
 
 
 def _is_uniform_table(value: Any) -> bool:
@@ -45,7 +49,7 @@ def press(result: Any, store: dict[str, Any], *, max_rows: int = 20, max_chars: 
     if len(full_json) <= max_chars:
         return Pressed(digest=full_json, handle=None, full_chars=len(full_json))
 
-    handle = f"press:{len(store)}"
+    handle = f"press:{next(_HANDLES)}"
     store[handle] = result
 
     if _is_uniform_table(result):
